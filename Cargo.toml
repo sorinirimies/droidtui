@@ -1,10 +1,20 @@
 [package]
 name = "droidtui"
 version = "0.1.0"
-description = "A comand line TUI for Android device and build commands toolkit."
+description = "A beautiful Terminal User Interface (TUI) for Android development and ADB commands"
 authors = ["Sorin Albu-Irimies <mihaiirimies@gmail.com>"]
 license = "MIT"
-edition = "2024"
+edition = "2021"
+repository = "https://github.com/sorinirimies/droidtui"
+homepage = "https://github.com/sorinirimies/droidtui"
+documentation = "https://docs.rs/droidtui"
+keywords = ["android", "adb", "tui", "terminal", "cli"]
+categories = ["command-line-utilities", "development-tools"]
+readme = "README.md"
+
+[[bin]]
+name = "droidtui"
+path = "src/main.rs"
 
 [dependencies]
 crossterm = { version = "0.28.1", features = ["event-stream"] }
