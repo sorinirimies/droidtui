@@ -7,7 +7,7 @@ use ratatui::{
 
 use crate::{
     app::{App, AppState},
-    effects::{RevealWidget, get_loading_dots, get_loading_spinner, get_progress_bar},
+    effects::{get_loading_dots, get_loading_spinner, get_progress_bar, RevealWidget},
 };
 
 impl Widget for &mut App {
@@ -124,7 +124,7 @@ impl App {
                         match cell.fg {
                             Color::Green => {
                                 let intensity = (255.0 * fade_progress) as u8;
-                                cell.set_fg(Color::Rgb(0, intensity.min(255), 0));
+                                cell.set_fg(Color::Rgb(0, intensity, 0));
                             }
                             Color::White => {
                                 let intensity = (255.0 * fade_progress) as u8;
@@ -226,7 +226,7 @@ impl App {
                         let mut current_length = 0;
 
                         for word in line.split_whitespace() {
-                            if current_length + word.len() + 1 <= max_width {
+                            if current_length + word.len() < max_width {
                                 if !current_chunk.is_empty() {
                                     current_chunk.push(' ');
                                     current_length += 1;

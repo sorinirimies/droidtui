@@ -122,7 +122,7 @@ impl<'a> Widget for RevealWidget<'a> {
                 let wave_intensity = (wave * 32.0) as u8;
                 let base_intensity =
                     ((1.0 - distance_from_center / (area.width as f32)) * alpha as f32) as u8;
-                let final_intensity = base_intensity.saturating_add(wave_intensity).min(255);
+                let final_intensity = base_intensity.saturating_add(wave_intensity);
 
                 let color = if progress < 1.0 {
                     // Reveal animation - sweep from center
