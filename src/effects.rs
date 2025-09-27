@@ -1,0 +1,244 @@
+use ratatui::{
+    buffer::Buffer,
+    layout::{Alignment, Rect},
+    style::{Color, Style},
+    widgets::{Block, BorderType, Paragraph, Widget},
+};
+use std::time::{Duration, Instant};
+
+#[derive(Debug)]
+pub struct EffectsManager {
+    pub start_time: Instant,
+    pub startup_duration: Duration,
+    pub tick_count: u64,
+    pub fade_in_start: Option<Instant>,
+    pub fade_in_duration: Duration,
+}
+
+impl EffectsManager {
+    pub fn new() -> Self {
+        Self {
+            start_time: Instant::now(),
+            startup_duration: Duration::from_millis(2500),
+            tick_count: 0,
+            fade_in_start: None,
+            fade_in_duration: Duration::from_millis(300),
+        }
+    }
+
+    pub fn tick(&mut self, _elapsed: Duration) {
+        self.tick_count += 1;
+    }
+
+    pub fn start_fade_in(&mut self) {
+        self.fade_in_start = Some(Instant::now());
+    }
+
+    pub fn get_fade_in_progress(&self) -> f32 {
+        if let Some(start) = self.fade_in_start {
+            let elapsed = start.elapsed();
+            if elapsed >= self.fade_in_duration {
+                1.0
+            } else {
+                elapsed.as_millis() as f32 / self.fade_in_duration.as_millis() as f32
+            }
+        } else {
+            1.0
+        }
+    }
+
+    pub fn is_fade_in_complete(&self) -> bool {
+        if let Some(start) = self.fade_in_start {
+            start.elapsed() >= self.fade_in_duration
+        } else {
+            true
+        }
+    }
+
+    pub fn is_startup_complete(&self) -> bool {
+        self.start_time.elapsed() >= self.startup_duration
+    }
+
+    pub fn get_startup_progress(&self) -> f32 {
+        let elapsed = self.start_time.elapsed();
+        if elapsed >= self.startup_duration {
+            1.0
+        } else {
+            elapsed.as_millis() as f32 / self.startup_duration.as_millis() as f32
+        }
+    }
+
+    pub fn get_reveal_alpha(&self) -> u8 {
+        let progress = self.get_startup_progress();
+        (progress * 255.0) as u8
+    }
+
+    pub fn get_wave_effect(&self) -> f32 {
+        let time = self.tick_count as f32 * 0.1;
+        (time.sin() + 1.0) / 2.0
+    }
+}
+
+impl Default for EffectsManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// Widget for the startup reveal animation
+pub struct RevealWidget<'a> {
+    effects_manager: &'a mut EffectsManager,
+    title: &'a str,
+    subtitle: &'a str,
+}
+
+impl<'a> RevealWidget<'a> {
+    pub fn new(effects_manager: &'a mut EffectsManager, title: &'a str, subtitle: &'a str) -> Self {
+        Self {
+            effects_manager,
+            title,
+            subtitle,
+        }
+    }
+}
+
+impl<'a> Widget for RevealWidget<'a> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let progress = self.effects_manager.get_startup_progress();
+        let alpha = self.effects_manager.get_reveal_alpha();
+        let wave = self.effects_manager.get_wave_effect();
+
+        // Create animated gradient background
+        for y in area.top()..area.bottom() {
+            for x in area.left()..area.right() {
+                let distance_from_center = {
+                    let center_x = area.width / 2;
+                    let center_y = area.height / 2;
+                    let dx = (x - area.left()).abs_diff(center_x) as f32;
+                    let dy = (y - area.top()).abs_diff(center_y) as f32;
+                    (dx * dx + dy * dy).sqrt()
+                };
+
+                let wave_intensity = (wave * 32.0) as u8;
+                let base_intensity =
+                    ((1.0 - distance_from_center / (area.width as f32)) * alpha as f32) as u8;
+                let final_intensity = base_intensity.saturating_add(wave_intensity).min(255);
+
+                let color = if progress < 1.0 {
+                    // Reveal animation - sweep from center
+                    Color::Rgb(0, final_intensity / 4, 0)
+                } else {
+                    // Completed - gentle pulse
+                    Color::Rgb(0, (final_intensity / 6).max(8), 0)
+                };
+
+                if let Some(cell) = buf.cell_mut((x, y)) {
+                    cell.set_bg(color);
+                }
+            }
+        }
+
+        // Create the main content with fade-in effect
+        let content = if progress < 0.3 {
+            // Early phase - just show dots
+            "●●●".to_string()
+        } else if progress < 0.6 {
+            // Mid phase - show title
+            format!("🚀 {}", self.title)
+        } else if progress < 1.0 {
+            // Late phase - show title and subtitle
+            format!("🚀 {}\n\n{}", self.title, self.subtitle)
+        } else {
+            // Complete - show all with instructions
+            format!(
+                "🚀 {}\n\n{}\n\nPress any key to continue...",
+                self.title, self.subtitle
+            )
+        };
+
+        // Calculate text color based on progress
+        let text_color = if progress < 1.0 {
+            Color::Rgb(0, alpha, 0)
+        } else {
+            // Pulse effect when complete
+            let pulse = ((self.effects_manager.tick_count / 20) % 2) as u8;
+            if pulse == 0 {
+                Color::LightGreen
+            } else {
+                Color::Green
+            }
+        };
+
+        let block = Block::bordered()
+            .title("🌟 Welcome")
+            .title_alignment(Alignment::Center)
+            .border_type(BorderType::Rounded)
+            .style(Style::default().fg(text_color));
+
+        let paragraph = Paragraph::new(content)
+            .block(block)
+            .style(Style::default().fg(text_color))
+            .alignment(Alignment::Center);
+
+        // Center the content
+        let popup_area = centered_rect(70, 50, area);
+        paragraph.render(popup_area, buf);
+    }
+}
+
+// Helper function to create centered rectangles
+fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
+    use ratatui::layout::{Constraint, Direction, Layout};
+
+    let popup_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Percentage((100 - percent_y) / 2),
+            Constraint::Percentage(percent_y),
+            Constraint::Percentage((100 - percent_y) / 2),
+        ])
+        .split(r);
+
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage((100 - percent_x) / 2),
+            Constraint::Percentage(percent_x),
+            Constraint::Percentage((100 - percent_x) / 2),
+        ])
+        .split(popup_layout[1])[1]
+}
+
+// Menu highlight effects with consistent green color
+pub fn get_selection_color(_tick_count: u64, _position: usize) -> Color {
+    // Consistent green color for all selections
+    Color::Green
+}
+
+// Loading animation characters
+pub fn get_loading_spinner(tick_count: u64) -> &'static str {
+    let spinner_chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    let index = (tick_count / 8) % spinner_chars.len() as u64;
+    spinner_chars[index as usize]
+}
+
+// Loading dots animation
+pub fn get_loading_dots(tick_count: u64) -> String {
+    let dots_count = ((tick_count / 20) % 4) as usize;
+    let dots = ".".repeat(dots_count);
+    format!("Loading{:<3}", dots)
+}
+
+// Progress bar animation
+pub fn get_progress_bar(tick_count: u64, width: usize) -> String {
+    let progress = ((tick_count / 5) % width as u64) as usize;
+    let filled = "█".repeat(progress);
+    let empty = "░".repeat(width.saturating_sub(progress));
+    format!("[{}{}]", filled, empty)
+}
+
+// Enhanced selection effect with consistent green color
+pub fn get_selection_color_with_boost(_tick_count: u64, _position: usize, _boost: u64) -> Color {
+    // Always return consistent green color, no boost effects for line selection
+    Color::Green
+}
