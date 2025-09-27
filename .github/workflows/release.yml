@@ -46,8 +46,12 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Updating version to: $VERSION"
 
-          # Update Cargo.toml version
-          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          # Update Cargo.toml version (portable sed for both GNU and BSD)
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          else
+            sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          fi
 
           # Update full changelog with git-cliff
           git-cliff --config cliff.toml --latest --output CHANGELOG.md
@@ -150,11 +154,16 @@ jobs:
       - name: Update version in Cargo.toml
         run: |
           VERSION=${{ needs.generate-changelog.outputs.version }}
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          if [[ "${{ runner.os }}" == "macOS" ]]; then
+            sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          elif [[ "${{ runner.os }}" == "Windows" ]]; then
+            # Use PowerShell on Windows
+            powershell -Command "(Get-Content Cargo.toml) -replace '^version = \".*\"', 'version = \"$env:VERSION\"' | Set-Content Cargo.toml"
           else
             sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
           fi
+        env:
+          VERSION: ${{ needs.generate-changelog.outputs.version }}
 
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
