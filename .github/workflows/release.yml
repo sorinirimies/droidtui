@@ -152,18 +152,15 @@ jobs:
           key: ${{ matrix.target }}
 
       - name: Update version in Cargo.toml
+        shell: python
         run: |
-          VERSION=${{ needs.generate-changelog.outputs.version }}
-          if [[ "${{ runner.os }}" == "macOS" ]]; then
-            sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
-          elif [[ "${{ runner.os }}" == "Windows" ]]; then
-            # Use PowerShell on Windows
-            powershell -Command "(Get-Content Cargo.toml) -replace '^version = \".*\"', 'version = \"$env:VERSION\"' | Set-Content Cargo.toml"
-          else
-            sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
-          fi
-        env:
-          VERSION: ${{ needs.generate-changelog.outputs.version }}
+          import re
+          version = "${{ needs.generate-changelog.outputs.version }}"
+          with open("Cargo.toml", "r") as f:
+              content = f.read()
+          content = re.sub(r'^version = ".*"', f'version = "{version}"', content, flags=re.MULTILINE)
+          with open("Cargo.toml", "w") as f:
+              f.write(content)
 
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
@@ -220,9 +217,15 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Update version in Cargo.toml
+        shell: python
         run: |
-          VERSION=${{ needs.generate-changelog.outputs.version }}
-          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
+          import re
+          version = "${{ needs.generate-changelog.outputs.version }}"
+          with open("Cargo.toml", "r") as f:
+              content = f.read()
+          content = re.sub(r'^version = ".*"', f'version = "{version}"', content, flags=re.MULTILINE)
+          with open("Cargo.toml", "w") as f:
+              f.write(content)
 
       - name: Publish to crates.io
         run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
