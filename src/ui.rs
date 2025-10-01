@@ -72,12 +72,14 @@ impl App {
     }
 
     fn render_menu(&mut self, area: Rect, buf: &mut Buffer) {
-        // Create layout
+        // Create layout with spacing
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Length(3), // Header
+                Constraint::Length(1), // Spacing
                 Constraint::Min(0),    // Menu content
+                Constraint::Length(1), // Spacing
                 Constraint::Length(3), // Footer
             ])
             .split(area);
@@ -96,10 +98,10 @@ impl App {
 
         header.render(chunks[0], buf);
 
-        // Render menu
-        (&self.menu).render(chunks[1], buf);
+        // Render menu (skip chunk[1] which is spacing)
+        (&self.menu).render(chunks[2], buf);
 
-        // Render footer with help
+        // Render footer with help (skip chunk[3] which is spacing)
         let footer_block = Block::bordered()
             .title("Help")
             .title_alignment(Alignment::Center)
@@ -151,7 +153,7 @@ impl App {
             .style(Style::default().fg(Color::White))
             .alignment(Alignment::Center);
 
-        footer.render(chunks[2], buf);
+        footer.render(chunks[4], buf);
     }
 
     fn render_executing(&mut self, area: Rect, buf: &mut Buffer) {
