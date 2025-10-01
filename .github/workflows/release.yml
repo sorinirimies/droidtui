@@ -123,4 +123,17 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to crates.io
-        run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
+        if: env.CRATES_IO_TOKEN != ''
+        env:
+          CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          echo "Publishing to crates.io..."
+          cargo publish --token $CRATES_IO_TOKEN --allow-dirty
+
+      - name: Skip crates.io publish
+        if: env.CRATES_IO_TOKEN == ''
+        env:
+          CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+        run: |
+          echo "⚠️  CRATES_IO_TOKEN not set. Skipping crates.io publication."
+          echo "To publish to crates.io, add CRATES_IO_TOKEN to your GitHub secrets."
