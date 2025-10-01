@@ -10,11 +10,9 @@ permissions:
   packages: write
 
 jobs:
-  generate-changelog:
-    name: Generate changelog
+  build:
+    name: Build and release
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.version.outputs.version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,6 +23,9 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
 
       - name: Check formatting
         run: cargo fmt --all -- --check
@@ -38,20 +39,14 @@ jobs:
       - name: Install cliff
         run: cargo install git-cliff
 
-      - name: Extract version and generate changelog
-        id: version
+      - name: Update version and generate changelog
         run: |
           # Extract version from tag (remove 'v' prefix)
           VERSION=${GITHUB_REF_NAME#v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Updating version to: $VERSION"
 
-          # Update Cargo.toml version (portable sed for both GNU and BSD)
-          if [[ "${{ runner.os }}" == "macOS" ]]; then
-            sed -i '' "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
-          else
-            sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
-          fi
+          # Update Cargo.toml version
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml
 
           # Update full changelog with git-cliff
           git-cliff --config cliff.toml --latest --output CHANGELOG.md
@@ -109,123 +104,23 @@ jobs:
           echo "Generated release notes:"
           cat RELEASE_CHANGELOG.md
 
-      - name: Upload changelog
-        uses: actions/upload-artifact@v4
-        with:
-          name: changelog
-          path: |
-            RELEASE_CHANGELOG.md
-            CHANGELOG.md
+      - name: Build release
+        run: cargo build --release
 
-  build:
-    name: Build for ${{ matrix.os }}
-    needs: generate-changelog
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            artifact_name: droidtui
-            asset_name: linux-x86_64
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            artifact_name: droidtui.exe
-            asset_name: windows-x86_64
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            artifact_name: droidtui
-            asset_name: macos-x86_64
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      - name: Cache dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          key: ${{ matrix.target }}
-
-      - name: Update version in Cargo.toml
-        shell: python
+      - name: Package binary (Linux)
         run: |
-          import re
-          version = "${{ needs.generate-changelog.outputs.version }}"
-          with open("Cargo.toml", "r") as f:
-              content = f.read()
-          content = re.sub(r'^version = ".*"', f'version = "{version}"', content, flags=re.MULTILINE)
-          with open("Cargo.toml", "w") as f:
-              f.write(content)
-
-      - name: Build release binary
-        run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Package binary (Unix)
-        if: matrix.os != 'windows-latest'
-        run: |
-          tar -C target/${{ matrix.target }}/release -czvf droidtui-${{ github.ref_name }}-${{ matrix.asset_name }}.tar.gz ${{ matrix.artifact_name }}
-
-      - name: Package binary (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          cd target/${{ matrix.target }}/release
-          7z a ../../../droidtui-${{ github.ref_name }}-${{ matrix.asset_name }}.zip ${{ matrix.artifact_name }}
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: droidtui-${{ github.ref_name }}-${{ matrix.asset_name }}
-          path: droidtui-${{ github.ref_name }}-${{ matrix.asset_name }}.*
-
-  release:
-    name: Create GitHub Release
-    needs: [generate-changelog, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download changelog
-        uses: actions/download-artifact@v4
-        with:
-          name: changelog
-
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
+          tar -C target/release -czvf droidtui-${{ github.ref_name }}-linux-x86_64.tar.gz droidtui
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           body_path: RELEASE_CHANGELOG.md
           files: |
-            droidtui-${{ github.ref_name }}-linux-x86_64/droidtui-${{ github.ref_name }}-linux-x86_64.tar.gz
-            droidtui-${{ github.ref_name }}-windows-x86_64/droidtui-${{ github.ref_name }}-windows-x86_64.zip
-            droidtui-${{ github.ref_name }}-macos-x86_64/droidtui-${{ github.ref_name }}-macos-x86_64.tar.gz
+            droidtui-${{ github.ref_name }}-linux-x86_64.tar.gz
+            LICENSE
+            README.md
+            CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
-
-  publish:
-    name: Publish to crates.io
-    needs: [generate-changelog, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Update version in Cargo.toml
-        shell: python
-        run: |
-          import re
-          version = "${{ needs.generate-changelog.outputs.version }}"
-          with open("Cargo.toml", "r") as f:
-              content = f.read()
-          content = re.sub(r'^version = ".*"', f'version = "{version}"', content, flags=re.MULTILINE)
-          with open("Cargo.toml", "w") as f:
-              f.write(content)
 
       - name: Publish to crates.io
         run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }} --allow-dirty
