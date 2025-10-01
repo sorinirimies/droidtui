@@ -1,5 +1,11 @@
 # DroidTUI 🤖
 
+[![Crates.io](https://img.shields.io/crates/v/droidtui.svg)](https://crates.io/crates/droidtui)
+![Version](https://img.shields.io/badge/version-0.2.1-blue.svg)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Release](https://github.com/sorinirimies/droidtui/actions/workflows/release.yml/badge.svg)](https://github.com/sorinirimies/droidtui/actions/workflows/release.yml)
+[![CI](https://github.com/sorinirimies/droidtui/actions/workflows/ci.yml/badge.svg)](https://github.com/sorinirimies/droidtui/actions/workflows/ci.yml)
+
 A beautiful Terminal User Interface (TUI) for Android development, providing an intuitive interface for ADB (Android Debug Bridge) commands with stunning visual effects and animations powered by TachyonFX.
 
 ## Features ✨
@@ -17,27 +23,32 @@ A beautiful Terminal User Interface (TUI) for Android development, providing an 
 
 ### Prerequisites
 
-- Rust (latest stable version)
 - Android SDK with ADB in your PATH
 
-### Build from Source
+### Install from crates.io
 
 ```bash
-git clone <repository-url>
+cargo install droidtui
+```
+
+### Install from Source
+
+```bash
+git clone https://github.com/sorinirimies/droidtui.git
 cd droidtui
-cargo build --release
+cargo install --path .
 ```
 
 ### Run
 
 ```bash
-cargo run
+droidtui
 ```
 
-Or after building:
+Or with cargo:
 
 ```bash
-./target/release/droidtui
+cargo run
 ```
 
 ## Usage 🎮
