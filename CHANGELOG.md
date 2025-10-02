@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 
 - Add automatic changelog generation with git-cliff
 
+### 🐛 Bug Fixes
+
+- Remove syntax error from bump_version.sh script
+
 ### 📚 Documentation
 
 - Add quick release guide
