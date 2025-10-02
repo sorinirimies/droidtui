@@ -4,7 +4,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
-    widgets::{Block, BorderType, List, ListItem, ListState, Paragraph, Widget},
+    widgets::{Block, List, ListItem, ListState, Paragraph, Widget},
 };
 
 #[derive(Debug, Clone)]
@@ -514,15 +514,26 @@ impl Menu {
 
 impl Widget for &Menu {
     fn render(self, area: Rect, buf: &mut Buffer) {
+        // Split the area horizontally with a separator column
         let chunks = if self.in_child_mode {
             Layout::default()
                 .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
+                .margin(0)
+                .constraints([
+                    Constraint::Percentage(40),
+                    Constraint::Length(1), // Separator
+                    Constraint::Percentage(60),
+                ])
                 .split(area)
         } else {
             Layout::default()
                 .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
+                .margin(0)
+                .constraints([
+                    Constraint::Percentage(60),
+                    Constraint::Length(1), // Separator
+                    Constraint::Percentage(40),
+                ])
                 .split(area)
         };
 
@@ -544,10 +555,9 @@ impl Widget for &Menu {
                 })
                 .collect();
 
-            let parent_block = Block::bordered()
+            let parent_block = Block::default()
                 .title("📂 Categories")
                 .title_alignment(Alignment::Center)
-                .border_type(BorderType::Rounded)
                 .style(Style::default().fg(Color::DarkGray));
 
             let parent_list = List::new(parent_items).block(parent_block);
@@ -558,6 +568,14 @@ impl Widget for &Menu {
                 buf,
                 &mut self.state.clone(),
             );
+
+            // Render vertical separator
+            for y in area.top()..area.bottom() {
+                if let Some(cell) = buf.cell_mut((chunks[1].x, y)) {
+                    cell.set_char('│');
+                    cell.set_fg(Color::DarkGray);
+                }
+            }
 
             // Render child menu (larger)
             if let Some(current_item) = self.items.get(self.selected) {
@@ -580,10 +598,9 @@ impl Widget for &Menu {
 
                 let child_border_color = Color::Green;
 
-                let child_block = Block::bordered()
-                    .title(format!("📱 {} Options", current_item.label))
-                    .title_alignment(Alignment::Center)
-                    .border_type(BorderType::Rounded)
+                let child_block = Block::default()
+                    .title(format!("│ {} Options", current_item.label))
+                    .title_alignment(Alignment::Left)
                     .style(Style::default().fg(child_border_color));
 
                 let child_list = List::new(child_items).block(child_block).highlight_style(
@@ -595,7 +612,7 @@ impl Widget for &Menu {
 
                 ratatui::widgets::StatefulWidget::render(
                     child_list,
-                    chunks[1],
+                    chunks[2],
                     buf,
                     &mut self.child_state.clone(),
                 );
@@ -628,10 +645,9 @@ impl Widget for &Menu {
 
             let menu_border_color = Color::Green;
 
-            let menu_block = Block::bordered()
+            let menu_block = Block::default()
                 .title("📱 ADB Commands")
-                .title_alignment(Alignment::Center)
-                .border_type(BorderType::Rounded)
+                .title_alignment(Alignment::Left)
                 .style(Style::default().fg(menu_border_color));
 
             let menu_list = List::new(items).block(menu_block).highlight_style(
@@ -648,14 +664,21 @@ impl Widget for &Menu {
                 &mut self.state.clone(),
             );
 
+            // Render vertical separator
+            for y in area.top()..area.bottom() {
+                if let Some(cell) = buf.cell_mut((chunks[1].x, y)) {
+                    cell.set_char('│');
+                    cell.set_fg(Color::DarkGray);
+                }
+            }
+
             // Render description panel with dynamic styling
             if let Some(selected_item) = self.get_selected_item() {
                 let desc_color = Color::DarkGray;
 
-                let description_block = Block::bordered()
-                    .title("📋 Description")
-                    .title_alignment(Alignment::Center)
-                    .border_type(BorderType::Rounded)
+                let description_block = Block::default()
+                    .title("│ Description")
+                    .title_alignment(Alignment::Left)
                     .style(Style::default().fg(desc_color));
 
                 let help_text = if selected_item.children.is_empty() {
@@ -675,7 +698,7 @@ impl Widget for &Menu {
                     .alignment(Alignment::Left)
                     .wrap(ratatui::widgets::Wrap { trim: true });
 
-                description.render(chunks[1], buf);
+                description.render(chunks[2], buf);
             }
         }
     }

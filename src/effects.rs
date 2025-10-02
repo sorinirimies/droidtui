@@ -88,15 +88,17 @@ impl Default for EffectsManager {
 // Widget for the startup reveal animation
 pub struct RevealWidget<'a> {
     effects_manager: &'a mut EffectsManager,
-    title: &'a str,
     subtitle: &'a str,
 }
 
 impl<'a> RevealWidget<'a> {
-    pub fn new(effects_manager: &'a mut EffectsManager, title: &'a str, subtitle: &'a str) -> Self {
+    pub fn new(
+        effects_manager: &'a mut EffectsManager,
+        _title: &'a str,
+        subtitle: &'a str,
+    ) -> Self {
         Self {
             effects_manager,
-            title,
             subtitle,
         }
     }
@@ -138,21 +140,33 @@ impl<'a> Widget for RevealWidget<'a> {
             }
         }
 
+        // ASCII Art for DroidTUI and Android logo
+        let ascii_art = r#"
+           ██████╗ ██████╗  ██████╗ ██╗██████╗ ████████╗██╗   ██╗██╗
+           ██╔══██╗██╔══██╗██╔═══██╗██║██╔══██╗╚══██╔══╝██║   ██║██║
+           ██║  ██║██████╔╝██║   ██║██║██║  ██║   ██║   ██║   ██║██║
+           ██║  ██║██╔══██╗██║   ██║██║██║  ██║   ██║   ██║   ██║██║
+           ██████╔╝██║  ██║╚██████╔╝██║██████╔╝   ██║   ╚██████╔╝██║
+           ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝╚═════╝    ╚═╝    ╚═════╝ ╚═╝
+
+                   Android Development Toolkit
+"#;
+
         // Create the main content with fade-in effect
         let content = if progress < 0.3 {
             // Early phase - just show dots
-            "●●●".to_string()
+            "●●●\n\nInitializing...".to_string()
         } else if progress < 0.6 {
-            // Mid phase - show title
-            format!("🚀 {}", self.title)
+            // Mid phase - show ASCII art
+            ascii_art.to_string()
         } else if progress < 1.0 {
-            // Late phase - show title and subtitle
-            format!("🚀 {}\n\n{}", self.title, self.subtitle)
+            // Late phase - show ASCII art with subtitle
+            format!("{}\n{}", ascii_art, self.subtitle)
         } else {
             // Complete - show all with instructions
             format!(
-                "🚀 {}\n\n{}\n\nPress any key to continue...",
-                self.title, self.subtitle
+                "{}\n{}\n\n⚡ Press any key to continue...",
+                ascii_art, self.subtitle
             )
         };
 
@@ -170,7 +184,7 @@ impl<'a> Widget for RevealWidget<'a> {
         };
 
         let block = Block::bordered()
-            .title("🌟 Welcome")
+            .title("🌟 Welcome to DroidTUI")
             .title_alignment(Alignment::Center)
             .border_type(BorderType::Rounded)
             .style(Style::default().fg(text_color));
@@ -180,8 +194,8 @@ impl<'a> Widget for RevealWidget<'a> {
             .style(Style::default().fg(text_color))
             .alignment(Alignment::Center);
 
-        // Center the content
-        let popup_area = centered_rect(70, 50, area);
+        // Center the content - larger area for ASCII art
+        let popup_area = centered_rect(90, 85, area);
         paragraph.render(popup_area, buf);
     }
 }

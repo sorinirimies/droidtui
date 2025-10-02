@@ -83,14 +83,13 @@ fn render_executing(model: &Model, area: Rect, buf: &mut Buffer) {
 
 /// Render main menu with header and footer
 fn render_menu(model: &mut Model, area: Rect, buf: &mut Buffer) {
-    // Create layout with spacing
+    // Create layout with proper constraints
     let chunks = Layout::default()
         .direction(Direction::Vertical)
+        .margin(0)
         .constraints([
             Constraint::Length(3), // Header
-            Constraint::Length(1), // Spacing
             Constraint::Min(0),    // Menu content
-            Constraint::Length(1), // Spacing
             Constraint::Length(3), // Footer
         ])
         .split(area);
@@ -109,10 +108,20 @@ fn render_menu(model: &mut Model, area: Rect, buf: &mut Buffer) {
 
     header.render(chunks[0], buf);
 
-    // Render menu (skip chunk[1] which is spacing)
-    (&model.menu).render(chunks[2], buf);
+    // Wrap menu in a bordered block to ensure alignment
+    let menu_block = Block::bordered()
+        .title("📱 ADB Command Interface")
+        .title_alignment(Alignment::Center)
+        .border_type(BorderType::Rounded)
+        .style(Style::default().fg(Color::Green));
 
-    // Render footer with help (skip chunk[3] which is spacing)
+    let menu_inner = menu_block.inner(chunks[1]);
+    menu_block.render(chunks[1], buf);
+
+    // Render menu content inside the bordered block
+    (&model.menu).render(menu_inner, buf);
+
+    // Render footer with help
     let footer_block = Block::bordered()
         .title("Help")
         .title_alignment(Alignment::Center)
@@ -164,7 +173,7 @@ fn render_menu(model: &mut Model, area: Rect, buf: &mut Buffer) {
         .style(Style::default().fg(Color::White))
         .alignment(Alignment::Center);
 
-    footer.render(chunks[4], buf);
+    footer.render(chunks[2], buf);
 }
 
 /// Render command result with scrolling support

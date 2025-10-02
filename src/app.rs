@@ -83,9 +83,7 @@ impl App {
     /// Map keyboard input to messages based on current state
     fn key_to_message(&self, key: KeyCode) -> Option<Message> {
         match self.model.state {
-            AppState::Startup => match key {
-                _ => Some(Message::SkipStartup),
-            },
+            AppState::Startup => Some(Message::SkipStartup),
 
             AppState::Menu => match key {
                 KeyCode::Esc | KeyCode::Char('q') => Some(Message::Quit),
@@ -93,11 +91,9 @@ impl App {
                 KeyCode::Down | KeyCode::Char('j') => Some(Message::MenuDown),
                 KeyCode::Enter => {
                     if self.model.menu.is_in_child_mode() {
-                        if let Some(command) = self.model.get_selected_command() {
-                            Some(Message::ExecuteCommand(command))
-                        } else {
-                            None
-                        }
+                        self.model
+                            .get_selected_command()
+                            .map(Message::ExecuteCommand)
                     } else {
                         Some(Message::EnterChild)
                     }
