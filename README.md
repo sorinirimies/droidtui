@@ -194,6 +194,47 @@ Visual effects can be modified in `src/effects.rs`:
 - Change startup progress phases and content timing
 - Modify layout border colors (green for active, dark gray for inactive)
 
+## Release Automation 🚀
+
+DroidTUI includes automated tools for version management and releases.
+
+### Quick Release
+
+Install `just` command runner:
+```bash
+cargo install just
+```
+
+Bump version and release in one command:
+```bash
+just release 0.2.5
+```
+
+### Available Commands
+
+```bash
+just              # Show all available commands
+just version      # Show current version
+just bump 0.2.5   # Bump version to 0.2.5
+just release 0.2.5  # Full release workflow
+just check-all    # Run all checks (fmt, clippy, test)
+```
+
+### Manual Version Bump
+
+Use the provided script:
+```bash
+./scripts/bump_version.sh 0.2.5
+```
+
+### Automated Workflows
+
+- **CI Workflow**: Runs tests on every push and PR
+- **Release Workflow**: Builds and publishes on tag push
+- **Update README**: Automatically updates version badge on release
+
+See [RELEASE.md](RELEASE.md) for detailed release process documentation.
+
 ## Contributing 🤝
 
 Contributions are welcome! Please feel free to submit a Pull Request.
