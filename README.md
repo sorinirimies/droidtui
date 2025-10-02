@@ -196,6 +196,8 @@ Visual effects can be modified in `src/effects.rs`:
 
 ## Release Automation 🚀
 
+**📚 See [QUICK_RELEASE.md](QUICK_RELEASE.md) for a quick start guide!**
+
 DroidTUI includes automated tools for version management and releases.
 
 ### Quick Release
@@ -233,7 +235,9 @@ Use the provided script:
 - **Release Workflow**: Builds and publishes on tag push
 - **Update README**: Automatically updates version badge on release
 
-See [RELEASE.md](RELEASE.md) for detailed release process documentation.
+📚 **Documentation:**
+- **Quick Start**: [QUICK_RELEASE.md](QUICK_RELEASE.md) - TL;DR one-command release
+- **Full Guide**: [RELEASE.md](RELEASE.md) - Detailed release process documentation
 
 ## Contributing 🤝
 
