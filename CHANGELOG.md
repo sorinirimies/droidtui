@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6] - 2025-10-02
+
+### 🚀 Features
+
+- Add automatic changelog generation with git-cliff
+
+### 📚 Documentation
+
+- Add quick release guide
+
 ## [0.2.5] - 2025-10-02
 
 ### 📚 Documentation
