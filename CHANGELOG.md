@@ -16,6 +16,10 @@ All notable changes to this project will be documented in this file.
 
 - Add quick release guide
 
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 0.2.6
+
 ## [0.2.5] - 2025-10-02
 
 ### 📚 Documentation
