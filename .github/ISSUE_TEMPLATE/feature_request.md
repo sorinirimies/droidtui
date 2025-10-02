@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for Weather Man CLI
+about: Suggest an idea for Drod-Tui
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''

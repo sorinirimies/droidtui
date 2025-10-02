@@ -126,7 +126,7 @@ jobs:
       - name: Build release
         run: cargo build --release
 
-      - name: Package binary (Linux)
+      - name: Package binary
         run: |
           tar -C target/release -czvf droidtui-${{ github.ref_name }}-linux-x86_64.tar.gz droidtui
 
