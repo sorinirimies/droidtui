@@ -85,14 +85,13 @@ fi
 
 # Git operations
 echo -e "${GREEN}Staging changes...${NC}"
-git add Cargo.toml Cargo.lock README.md CHANGELOG.md</parameter>
-git add Cargo.toml Cargo.lock README.md
+git add Cargo.toml Cargo.lock README.md CHANGELOG.md
 
 echo -e "${GREEN}Creating commit...${NC}"
 git commit -m "chore: bump version to ${NEW_VERSION}
 
 - Update version in Cargo.toml and README.md
-- Generate updated CHANGELOG.md"</parameter>
+- Generate updated CHANGELOG.md"
 
 echo -e "${GREEN}Creating tag...${NC}"
 git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
