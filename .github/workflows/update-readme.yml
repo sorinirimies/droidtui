@@ -1,0 +1,63 @@
+name: Update README Version
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG=${GITHUB_REF#refs/tags/v}
+          echo "version=${TAG}" >> $GITHUB_OUTPUT
+          echo "Version: ${TAG}"
+
+      - name: Update README.md version badge
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          sed -i "s/version-[0-9]*\.[0-9]*\.[0-9]*-blue/version-${VERSION}-blue/" README.md
+
+      - name: Check if README was modified
+        id: check_changes
+        run: |
+          if git diff --quiet README.md; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes to README.md"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "README.md updated"
+          fi
+
+      - name: Commit and push if changed
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add README.md
+          git commit -m "docs: update README version badge to ${{ steps.version.outputs.version }}"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Success message
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          echo "✅ README.md version badge updated to ${{ steps.version.outputs.version }}"
+
+      - name: No changes message
+        if: steps.check_changes.outputs.changed == 'false'
+        run: |
+          echo "ℹ️ README.md already up to date"
