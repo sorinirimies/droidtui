@@ -20,12 +20,13 @@ This will:
 1. Update version in `Cargo.toml`
 2. Update version badge in `README.md`
 3. Update `Cargo.lock`
-4. Run formatting checks
-5. Run clippy linter
-6. Run tests
-7. Create a git commit
-8. Create a git tag
-9. Push to GitHub
+4. Generate `CHANGELOG.md` with git-cliff
+5. Run formatting checks
+6. Run clippy linter
+7. Run tests
+8. Create a git commit
+9. Create a git tag
+10. Push to GitHub
 
 ### Using the Bash Script
 
@@ -54,6 +55,12 @@ version = "0.2.5"
 **README.md:**
 ```markdown
 ![Version](https://img.shields.io/badge/version-0.2.5-blue.svg)
+```
+
+**CHANGELOG.md:**
+Generate with git-cliff:
+```bash
+git-cliff --tag v0.2.5 -o CHANGELOG.md
 ```
 
 ### 2. Run Quality Checks
@@ -113,9 +120,10 @@ git push origin v0.2.5
 Once you push a tag, GitHub Actions will automatically:
 1. Run CI tests
 2. Build release binaries
-3. Create a GitHub Release
-4. Publish to crates.io (if `CRATES_IO_TOKEN` secret is set)
-5. Update README version badge
+3. Generate and commit CHANGELOG.md
+4. Update README version badge
+5. Create a GitHub Release (with changelog)
+6. Publish to crates.io (if `CRATES_IO_TOKEN` secret is set)
 
 ## Version Numbering
 
@@ -155,11 +163,23 @@ just test
 # Build release binary
 just build-release
 
+# Generate changelog
+just changelog
+
+# Generate changelog for unreleased
+just changelog-unreleased
+
+# Generate changelog for specific version
+just changelog-version 0.2.5
+
 # Bump version (updates all files)
 just bump 0.2.5
 
 # Full release workflow
 just release 0.2.5
+
+# View changelog
+just view-changelog
 ```
 
 ## GitHub Actions Workflows
@@ -174,15 +194,53 @@ just release 0.2.5
 - Actions:
   - Build release binaries
   - Run tests
+  - Generate CHANGELOG.md with git-cliff
+  - Create GitHub Release (with changelog notes)
   - Publish to crates.io
-  - Create GitHub Release
 
-### Update README Workflow (`.github/workflows/update-readme.yml`)
+### Update README and CHANGELOG Workflow (`.github/workflows/update-readme.yml`)
 - Triggers on: Tags matching `v*.*.*`
 - Actions:
   - Extract version from tag
   - Update README.md version badge
+  - Generate CHANGELOG.md with git-cliff
   - Commit and push changes
+
+## Git-Cliff (Changelog Generator)
+
+### Installation
+
+```bash
+cargo install git-cliff
+```
+
+### Usage
+
+```bash
+# Generate full changelog
+git-cliff -o CHANGELOG.md
+
+# Generate changelog for specific version
+git-cliff --tag v0.2.5 -o CHANGELOG.md
+
+# Generate unreleased changes
+git-cliff --unreleased -o CHANGELOG.md
+
+# View changes between tags
+git-cliff v0.2.3..v0.2.4
+```
+
+### Configuration
+
+The changelog format is configured in `cliff.toml` and follows conventional commits:
+- `feat:` → 🚀 Features
+- `fix:` → 🐛 Bug Fixes
+- `docs:` → 📚 Documentation
+- `refactor:` → 🚜 Refactor
+- `perf:` → ⚡ Performance
+- `style:` → 🎨 Styling
+- `test:` → 🧪 Testing
+- `chore:` → ⚙️ Miscellaneous Tasks
 
 ## Publishing to crates.io
 
@@ -234,7 +292,8 @@ cargo yank --vers 0.2.5
 - [ ] Code is formatted (`cargo fmt --check`)
 - [ ] README is up to date
 - [ ] Version numbers are updated
-- [ ] Release notes are written
+- [ ] CHANGELOG.md is generated
+- [ ] Commits follow conventional commits format
 - [ ] No uncommitted changes
 - [ ] On main branch
 
@@ -242,14 +301,22 @@ cargo yank --vers 0.2.5
 
 - [ ] Tag is pushed to GitHub
 - [ ] GitHub Actions workflows completed successfully
-- [ ] GitHub Release is created
-- [ ] Published on crates.io
+- [ ] CHANGELOG.md is generated and committed
 - [ ] README version badge is updated
+- [ ] GitHub Release is created (with changelog)
+- [ ] Published on crates.io
 - [ ] Announcement on social media (optional)
 
 ## Troubleshooting
 
-### GitHub Action fails to update README
+### git-cliff not found
+
+Install git-cliff:
+```bash
+cargo install git-cliff
+```
+
+### GitHub Action fails to update README/CHANGELOG
 
 Check that the workflow has `contents: write` permission in the workflow file.
 

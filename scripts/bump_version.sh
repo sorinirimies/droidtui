@@ -73,12 +73,26 @@ if ! cargo test; then
     exit 1
 fi
 
+# Generate changelog
+echo -e "${GREEN}Generating CHANGELOG.md...${NC}"
+if command -v git-cliff &> /dev/null; then
+    git-cliff --tag "v${NEW_VERSION}" -o CHANGELOG.md
+    echo -e "${GREEN}Changelog updated${NC}"
+else
+    echo -e "${YELLOW}Warning: git-cliff not found. Skipping changelog generation.${NC}"
+    echo -e "${YELLOW}Install it with: cargo install git-cliff${NC}"
+fi
+
 # Git operations
 echo -e "${GREEN}Staging changes...${NC}"
+git add Cargo.toml Cargo.lock README.md CHANGELOG.md</parameter>
 git add Cargo.toml Cargo.lock README.md
 
 echo -e "${GREEN}Creating commit...${NC}"
-git commit -m "chore: bump version to ${NEW_VERSION}"
+git commit -m "chore: bump version to ${NEW_VERSION}
+
+- Update version in Cargo.toml and README.md
+- Generate updated CHANGELOG.md"</parameter>
 
 echo -e "${GREEN}Creating tag...${NC}"
 git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"

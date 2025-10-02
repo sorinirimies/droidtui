@@ -1,12 +1,12 @@
-name: Update README Version
+name: Update README and CHANGELOG
 
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 jobs:
-  update-readme:
+  update-docs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -17,6 +17,10 @@ jobs:
         with:
           fetch-depth: 0
           ref: main
+
+      - name: Install git-cliff
+        run: |
+          cargo install git-cliff
 
       - name: Extract version from tag
         id: version
@@ -30,15 +34,20 @@ jobs:
           VERSION=${{ steps.version.outputs.version }}
           sed -i "s/version-[0-9]*\.[0-9]*\.[0-9]*-blue/version-${VERSION}-blue/" README.md
 
-      - name: Check if README was modified
+      - name: Generate CHANGELOG.md
+        run: |
+          git-cliff --tag "v${{ steps.version.outputs.version }}" -o CHANGELOG.md
+          echo "✅ CHANGELOG.md generated"
+
+      - name: Check if files were modified
         id: check_changes
         run: |
-          if git diff --quiet README.md; then
+          if git diff --quiet README.md CHANGELOG.md; then
             echo "changed=false" >> $GITHUB_OUTPUT
-            echo "No changes to README.md"
+            echo "No changes to documentation files"
           else
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "README.md updated"
+            echo "Documentation files updated"
           fi
 
       - name: Commit and push if changed
@@ -46,8 +55,11 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add README.md
-          git commit -m "docs: update README version badge to ${{ steps.version.outputs.version }}"
+          git add README.md CHANGELOG.md
+          git commit -m "docs: update README and CHANGELOG for v${{ steps.version.outputs.version }}
+
+          - Update README version badge
+          - Generate CHANGELOG with git-cliff"
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,9 +67,11 @@ jobs:
       - name: Success message
         if: steps.check_changes.outputs.changed == 'true'
         run: |
-          echo "✅ README.md version badge updated to ${{ steps.version.outputs.version }}"
+          echo "✅ Documentation updated for v${{ steps.version.outputs.version }}"
+          echo "  - README.md version badge"
+          echo "  - CHANGELOG.md generated"
 
       - name: No changes message
         if: steps.check_changes.outputs.changed == 'false'
         run: |
-          echo "ℹ️ README.md already up to date"
+          echo "ℹ️ Documentation already up to date"

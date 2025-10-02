@@ -50,6 +50,21 @@ clean:
 install:
     cargo install --path .
 
+# Generate changelog
+changelog:
+    git-cliff -o CHANGELOG.md
+    @echo "✅ Changelog generated!"
+
+# Generate changelog for unreleased commits
+changelog-unreleased:
+    git-cliff --unreleased -o CHANGELOG.md
+    @echo "✅ Unreleased changelog generated!"
+
+# Generate changelog for specific version
+changelog-version version:
+    git-cliff --tag v{{version}} -o CHANGELOG.md
+    @echo "✅ Changelog generated for version {{version}}!"
+
 # Bump version (usage: just bump 0.2.5)
 bump version:
     @echo "Bumping version to {{version}}..."
@@ -113,3 +128,7 @@ info:
     @echo "Version: $(just version)"
     @echo "Author: Sorin Albu-Irimies"
     @echo "License: MIT"
+
+# View changelog
+view-changelog:
+    @cat CHANGELOG.md
