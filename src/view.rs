@@ -1,4 +1,7 @@
-use crate::effects::{get_loading_dots, get_loading_spinner, get_progress_bar, RevealWidget};
+use crate::effects::{
+    get_dots_orbit, get_loading_dots, get_loading_spinner, get_orbital_spinner,
+    get_particle_effect, get_progress_bar, get_wave_animation, RevealWidget,
+};
 use crate::model::{AppState, Model};
 use ratatui::{
     buffer::Buffer,
@@ -35,27 +38,49 @@ fn render_loading(model: &Model, area: Rect, buf: &mut Buffer) {
     let dots = get_loading_dots(model.loading_counter);
     let progress = get_progress_bar(model.loading_counter, 30);
 
+    // Create enhanced loading text with multiple spinners
+    let orbital_spinner = get_orbital_spinner(model.loading_counter);
+    let wave_animation = get_wave_animation(model.loading_counter);
+    let dots_orbit = get_dots_orbit(model.loading_counter);
+    let particle_effect = get_particle_effect(model.loading_counter);
+
+    // Multi-layered loading display
     let loading_text = format!(
-        "{} Executing Command {}\n\n{}\n\nPress Esc to cancel",
-        spinner, dots, progress
+        "{} Executing Command {}\n\n{}\n\n{}\n\n{}\n{}\n\nPress Esc to cancel",
+        spinner, dots, progress, wave_animation, dots_orbit, particle_effect
     );
 
+    // Animate border color cycling between yellow and green
+    let color_phase = (model.loading_counter as f32 * 0.05).sin() * 0.5 + 0.5;
+    let border_color = if color_phase > 0.5 {
+        Color::Yellow
+    } else {
+        Color::LightYellow
+    };
+
+    // Animated title with orbital spinner
+    let animated_title = format!("⚡ Processing {} ", orbital_spinner);
+
     let loading_block = Block::bordered()
-        .title("⚡ Processing")
+        .title(animated_title)
         .title_alignment(Alignment::Center)
         .border_type(BorderType::Rounded)
-        .style(Style::default().fg(Color::Yellow));
+        .style(Style::default().fg(border_color));
+
+    // Cycle text color for shimmer effect
+    let text_brightness = (170 + (color_phase * 85.0) as u8).min(255);
+    let text_color = Color::Rgb(text_brightness, text_brightness, 0);
 
     let loading_paragraph = Paragraph::new(loading_text)
         .block(loading_block)
-        .style(Style::default().fg(Color::LightYellow))
+        .style(Style::default().fg(text_color))
         .alignment(Alignment::Center);
 
     // Create pulsing animation effect
     let pulse = (model.loading_counter as f32 * 0.1).sin() * 0.5 + 0.5;
     let scale_factor = 1.0 + (pulse * 0.1); // Pulse between 1.0 and 1.1
 
-    let base_popup_area = centered_rect(50, 30, area);
+    let base_popup_area = centered_rect(55, 35, area);
 
     // Apply scale effect to the popup
     let scaled_width = (base_popup_area.width as f32 * scale_factor) as u16;
@@ -72,6 +97,9 @@ fn render_loading(model: &Model, area: Rect, buf: &mut Buffer) {
     };
 
     loading_paragraph.render(popup_area, buf);
+
+    // Add animated corners/decorations around the popup
+    render_loading_corners(popup_area, buf, model.loading_counter);
 }
 
 /// Render executing screen
@@ -422,6 +450,49 @@ fn render_scrollbar(
 }
 
 /// Helper function to create a centered rect
+/// Render animated corners around loading popup
+fn render_loading_corners(area: Rect, buf: &mut Buffer, tick_count: u64) {
+    if area.width < 4 || area.height < 4 {
+        return;
+    }
+
+    // Animate corner characters
+    let corner_chars = ['◢', '◣', '◤', '◥'];
+    let corner_index = ((tick_count / 5) % 4) as usize;
+    let corner_char = corner_chars[corner_index];
+
+    // Pulsing color for corners
+    let pulse = ((tick_count as f32 * 0.1).sin() * 0.5 + 0.5 * 255.0) as u8;
+    let corner_color = Color::Rgb(pulse, pulse, 0);
+
+    // Top-left corner
+    if let Some(cell) = buf.cell_mut((area.x, area.y)) {
+        cell.set_char(corner_char);
+        cell.set_fg(corner_color);
+    }
+
+    // Top-right corner
+    if let Some(cell) = buf.cell_mut((area.right().saturating_sub(1), area.y)) {
+        cell.set_char(corner_char);
+        cell.set_fg(corner_color);
+    }
+
+    // Bottom-left corner
+    if let Some(cell) = buf.cell_mut((area.x, area.bottom().saturating_sub(1))) {
+        cell.set_char(corner_char);
+        cell.set_fg(corner_color);
+    }
+
+    // Bottom-right corner
+    if let Some(cell) = buf.cell_mut((
+        area.right().saturating_sub(1),
+        area.bottom().saturating_sub(1),
+    )) {
+        cell.set_char(corner_char);
+        cell.set_fg(corner_color);
+    }
+}
+
 fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)

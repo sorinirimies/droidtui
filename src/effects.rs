@@ -218,7 +218,7 @@ impl<'a> Widget for RevealWidget<'a> {
            ██████╔╝██║  ██║╚██████╔╝██║██████╔╝   ██║   ╚██████╔╝██║
            ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝╚═════╝    ╚═╝    ╚═════╝ ╚═╝
 
-                   Android Development Toolkit
+              🤖 Android Development Toolkit 🤖
 "#;
 
         // Create the main content with fade-in effect
@@ -324,6 +324,78 @@ pub fn get_progress_bar(tick_count: u64, width: usize) -> String {
 pub fn get_selection_color_with_boost(_tick_count: u64, _position: usize, _boost: u64) -> Color {
     // Always return consistent green color, no boost effects for line selection
     Color::Green
+}
+
+// Orbital spinner animation (circles around)
+pub fn get_orbital_spinner(tick_count: u64) -> &'static str {
+    let orbital_chars = ["◐", "◓", "◑", "◒"];
+    let index = (tick_count / 5) % orbital_chars.len() as u64;
+    orbital_chars[index as usize]
+}
+
+// Wave animation for loading screen
+pub fn get_wave_animation(tick_count: u64) -> String {
+    let wave_chars = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"];
+    let wave_length = 15;
+    let mut wave = String::new();
+
+    for i in 0..wave_length {
+        let offset = (tick_count as i32 + i * 2) % (wave_chars.len() as i32 * 2);
+        let index = if offset >= wave_chars.len() as i32 {
+            (wave_chars.len() as i32 * 2 - offset - 1).max(0)
+        } else {
+            offset
+        } as usize;
+
+        wave.push_str(wave_chars[index.min(wave_chars.len() - 1)]);
+    }
+
+    wave
+}
+
+// Circular progress indicator
+pub fn get_circular_progress(tick_count: u64) -> String {
+    let segments = ["◜", "◝", "◞", "◟"];
+    let index = (tick_count / 3) % segments.len() as u64;
+    segments[index as usize].to_string()
+}
+
+// Dots orbit animation (dots rotating in a circle)
+pub fn get_dots_orbit(tick_count: u64) -> String {
+    let positions = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    let index = (tick_count / 4) % positions.len() as u64;
+    positions[index as usize].to_string()
+}
+
+// Particle effect - expanding dots
+pub fn get_particle_effect(tick_count: u64) -> String {
+    let cycle = (tick_count / 6) % 8;
+    match cycle {
+        0 => "·  ·  ·".to_string(),
+        1 => " · · · ".to_string(),
+        2 => "  ···  ".to_string(),
+        3 => "  ███  ".to_string(),
+        4 => " █████ ".to_string(),
+        5 => "  ███  ".to_string(),
+        6 => " · · · ".to_string(),
+        _ => "·  ·  ·".to_string(),
+    }
+}
+
+// Bouncing ball animation
+pub fn get_bouncing_ball(tick_count: u64) -> String {
+    let positions = [
+        "●       ",
+        " ●      ",
+        "  ●     ",
+        "   ●    ",
+        "    ●   ",
+        "   ●    ",
+        "  ●     ",
+        " ●      ",
+    ];
+    let index = (tick_count / 5) % positions.len() as u64;
+    positions[index as usize].to_string()
 }
 
 // Shimmer effect for selected items
