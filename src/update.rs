@@ -19,6 +19,7 @@ pub async fn update(model: &mut Model, message: Message) {
         Message::EnterChild => {
             model.menu.enter_child_mode();
             model.effects.start_fade_in();
+            model.effects.start_slide_in();
         }
 
         Message::ExitChild => {
@@ -30,6 +31,7 @@ pub async fn update(model: &mut Model, message: Message) {
             model.state = AppState::Loading;
             model.clear_results();
             model.loading_counter = 0;
+            model.effects.reset_slide();
 
             let result = execute_command(&command).await;
 
@@ -43,6 +45,7 @@ pub async fn update(model: &mut Model, message: Message) {
                 }
             }
             model.state = AppState::ShowResult;
+            model.effects.start_slide_in();
         }
 
         Message::CommandStarted => {
@@ -60,6 +63,7 @@ pub async fn update(model: &mut Model, message: Message) {
                 }
             }
             model.state = AppState::ShowResult;
+            model.effects.start_slide_in();
         }
 
         // Scroll messages
@@ -108,6 +112,7 @@ pub async fn update(model: &mut Model, message: Message) {
 
         Message::SkipStartup => {
             model.state = AppState::Menu;
+            model.effects.start_slide_in();
         }
     }
 }
@@ -127,6 +132,11 @@ fn tick(model: &mut Model) {
     // Update loading animation
     if model.state == AppState::Loading {
         model.loading_counter += 1;
+    }
+
+    // Update reveal animation for results
+    if model.state == AppState::ShowResult {
+        model.reveal_counter += 1;
     }
 
     // Check if startup is complete

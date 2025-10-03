@@ -13,6 +13,10 @@ pub struct EffectsManager {
     pub tick_count: u64,
     pub fade_in_start: Option<Instant>,
     pub fade_in_duration: Duration,
+    pub slide_in_start: Option<Instant>,
+    pub slide_in_duration: Duration,
+    pub slide_out_start: Option<Instant>,
+    pub slide_out_duration: Duration,
 }
 
 impl EffectsManager {
@@ -23,6 +27,10 @@ impl EffectsManager {
             tick_count: 0,
             fade_in_start: None,
             fade_in_duration: Duration::from_millis(300),
+            slide_in_start: None,
+            slide_in_duration: Duration::from_millis(250),
+            slide_out_start: None,
+            slide_out_duration: Duration::from_millis(200),
         }
     }
 
@@ -57,6 +65,67 @@ impl EffectsManager {
 
     pub fn is_startup_complete(&self) -> bool {
         self.start_time.elapsed() >= self.startup_duration
+    }
+
+    pub fn start_slide_in(&mut self) {
+        self.slide_in_start = Some(Instant::now());
+    }
+
+    pub fn start_slide_out(&mut self) {
+        self.slide_out_start = Some(Instant::now());
+    }
+
+    pub fn get_slide_in_progress(&self) -> f32 {
+        if let Some(start) = self.slide_in_start {
+            let elapsed = start.elapsed();
+            if elapsed >= self.slide_in_duration {
+                1.0
+            } else {
+                let progress =
+                    elapsed.as_millis() as f32 / self.slide_in_duration.as_millis() as f32;
+                // Ease out cubic for smooth deceleration
+                1.0 - (1.0 - progress).powi(3)
+            }
+        } else {
+            1.0
+        }
+    }
+
+    pub fn get_slide_out_progress(&self) -> f32 {
+        if let Some(start) = self.slide_out_start {
+            let elapsed = start.elapsed();
+            if elapsed >= self.slide_out_duration {
+                1.0
+            } else {
+                let progress =
+                    elapsed.as_millis() as f32 / self.slide_out_duration.as_millis() as f32;
+                // Ease in cubic for smooth acceleration
+                progress.powi(3)
+            }
+        } else {
+            0.0
+        }
+    }
+
+    pub fn is_slide_in_complete(&self) -> bool {
+        if let Some(start) = self.slide_in_start {
+            start.elapsed() >= self.slide_in_duration
+        } else {
+            true
+        }
+    }
+
+    pub fn is_slide_out_complete(&self) -> bool {
+        if let Some(start) = self.slide_out_start {
+            start.elapsed() >= self.slide_out_duration
+        } else {
+            false
+        }
+    }
+
+    pub fn reset_slide(&mut self) {
+        self.slide_in_start = None;
+        self.slide_out_start = None;
     }
 
     pub fn get_startup_progress(&self) -> f32 {
@@ -255,4 +324,43 @@ pub fn get_progress_bar(tick_count: u64, width: usize) -> String {
 pub fn get_selection_color_with_boost(_tick_count: u64, _position: usize, _boost: u64) -> Color {
     // Always return consistent green color, no boost effects for line selection
     Color::Green
+}
+
+// Shimmer effect for selected items
+pub fn get_shimmer_intensity(tick_count: u64) -> f32 {
+    let phase = (tick_count as f32 * 0.15).sin();
+    (phase + 1.0) / 2.0 // Normalize to 0.0-1.0
+}
+
+// Get shimmer color for menu item highlight
+pub fn get_shimmer_color(tick_count: u64, base_color: Color) -> Color {
+    let intensity = get_shimmer_intensity(tick_count);
+    let brightness = (200.0 + intensity * 55.0) as u8;
+
+    match base_color {
+        Color::Green => Color::Rgb(0, brightness, 0),
+        Color::Yellow => Color::Rgb(brightness, brightness, 0),
+        _ => base_color,
+    }
+}
+
+// Slide animation easing function (ease out cubic)
+pub fn ease_out_cubic(t: f32) -> f32 {
+    1.0 - (1.0 - t).powi(3)
+}
+
+// Slide animation easing function (ease in cubic)
+pub fn ease_in_cubic(t: f32) -> f32 {
+    t.powi(3)
+}
+
+// Bounce effect for emphasis
+pub fn get_bounce_offset(tick_count: u64, duration_ticks: u64) -> f32 {
+    if tick_count >= duration_ticks {
+        return 0.0;
+    }
+
+    let progress = tick_count as f32 / duration_ticks as f32;
+    let bounce = (progress * std::f32::consts::PI * 2.0).sin() * (1.0 - progress);
+    bounce * 3.0 // Scale the bounce effect
 }

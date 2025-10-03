@@ -51,7 +51,26 @@ fn render_loading(model: &Model, area: Rect, buf: &mut Buffer) {
         .style(Style::default().fg(Color::LightYellow))
         .alignment(Alignment::Center);
 
-    let popup_area = centered_rect(50, 30, area);
+    // Create pulsing animation effect
+    let pulse = (model.loading_counter as f32 * 0.1).sin() * 0.5 + 0.5;
+    let scale_factor = 1.0 + (pulse * 0.1); // Pulse between 1.0 and 1.1
+
+    let base_popup_area = centered_rect(50, 30, area);
+
+    // Apply scale effect to the popup
+    let scaled_width = (base_popup_area.width as f32 * scale_factor) as u16;
+    let scaled_height = (base_popup_area.height as f32 * scale_factor) as u16;
+
+    let width_offset = (scaled_width.saturating_sub(base_popup_area.width)) / 2;
+    let height_offset = (scaled_height.saturating_sub(base_popup_area.height)) / 2;
+
+    let popup_area = Rect {
+        x: base_popup_area.x.saturating_sub(width_offset),
+        y: base_popup_area.y.saturating_sub(height_offset),
+        width: scaled_width.min(area.width),
+        height: scaled_height.min(area.height),
+    };
+
     loading_paragraph.render(popup_area, buf);
 }
 
@@ -94,7 +113,24 @@ fn render_menu(model: &mut Model, area: Rect, buf: &mut Buffer) {
         ])
         .split(area);
 
-    // Render header
+    // Get slide animation progress
+    let slide_progress = model.effects.get_slide_in_progress();
+
+    // Calculate slide offset (slide in from right)
+    let slide_offset = ((1.0 - slide_progress) * area.width as f32 * 0.3) as u16;
+
+    // Render header with slide animation
+    let header_area = if slide_offset > 0 {
+        Rect {
+            x: chunks[0].x + slide_offset,
+            y: chunks[0].y,
+            width: chunks[0].width.saturating_sub(slide_offset),
+            height: chunks[0].height,
+        }
+    } else {
+        chunks[0]
+    };
+
     let header_block = Block::bordered()
         .title("🤖 DroidTUI - Android Development Toolkit")
         .title_alignment(Alignment::Center)
@@ -106,7 +142,21 @@ fn render_menu(model: &mut Model, area: Rect, buf: &mut Buffer) {
         .style(Style::default().fg(Color::LightGreen))
         .alignment(Alignment::Center);
 
-    header.render(chunks[0], buf);
+    if header_area.width > 0 {
+        header.render(header_area, buf);
+    }
+
+    // Render menu with slide animation
+    let menu_area = if slide_offset > 0 {
+        Rect {
+            x: chunks[1].x + slide_offset,
+            y: chunks[1].y,
+            width: chunks[1].width.saturating_sub(slide_offset),
+            height: chunks[1].height,
+        }
+    } else {
+        chunks[1]
+    };
 
     // Wrap menu in a bordered block to ensure alignment
     let menu_block = Block::bordered()
@@ -115,11 +165,13 @@ fn render_menu(model: &mut Model, area: Rect, buf: &mut Buffer) {
         .border_type(BorderType::Rounded)
         .style(Style::default().fg(Color::Green));
 
-    let menu_inner = menu_block.inner(chunks[1]);
-    menu_block.render(chunks[1], buf);
+    let menu_inner = menu_block.inner(menu_area);
 
-    // Render menu content inside the bordered block
-    (&model.menu).render(menu_inner, buf);
+    if menu_area.width > 0 {
+        menu_block.render(menu_area, buf);
+        // Render menu content inside the bordered block
+        (&model.menu).render(menu_inner, buf);
+    }
 
     // Render footer with help
     let footer_block = Block::bordered()
@@ -168,12 +220,26 @@ fn render_menu(model: &mut Model, area: Rect, buf: &mut Buffer) {
         }
     }
 
+    // Render footer with slide animation
+    let footer_area = if slide_offset > 0 {
+        Rect {
+            x: chunks[2].x + slide_offset,
+            y: chunks[2].y,
+            width: chunks[2].width.saturating_sub(slide_offset),
+            height: chunks[2].height,
+        }
+    } else {
+        chunks[2]
+    };
+
     let footer = Paragraph::new(footer_text)
         .block(footer_block)
         .style(Style::default().fg(Color::White))
         .alignment(Alignment::Center);
 
-    footer.render(chunks[2], buf);
+    if footer_area.width > 0 {
+        footer.render(footer_area, buf);
+    }
 }
 
 /// Render command result with scrolling support
@@ -186,8 +252,30 @@ fn render_result(model: &mut Model, area: Rect, buf: &mut Buffer) {
         ("📋 No Output", Color::Yellow)
     };
 
+    // Get slide animation progress for result popup
+    let slide_progress = model.effects.get_slide_in_progress();
+
     // Use larger area for results to accommodate more text
-    let popup_area = centered_rect(80, 70, area);
+    let base_popup_area = centered_rect(80, 70, area);
+
+    // Calculate slide offset (slide up from bottom)
+    let slide_offset = ((1.0 - slide_progress) * base_popup_area.height as f32 * 0.5) as u16;
+
+    let popup_area = if slide_offset > 0 {
+        Rect {
+            x: base_popup_area.x,
+            y: base_popup_area.y + slide_offset,
+            width: base_popup_area.width,
+            height: base_popup_area.height.saturating_sub(slide_offset),
+        }
+    } else {
+        base_popup_area
+    };
+
+    // Don't render if area is too small
+    if popup_area.height < 5 {
+        return;
+    }
 
     // Split area for content and scroll bar
     let chunks = Layout::default()

@@ -36,6 +36,9 @@ pub struct Model {
     /// Wrapped lines for display (handles wide content)
     pub wrapped_lines: Vec<String>,
 
+    /// Reveal animation counter for result display
+    pub reveal_counter: u64,
+
     /// Whether the application should continue running
     pub running: bool,
 }
@@ -79,6 +82,7 @@ impl Model {
             scroll_position: 0,
             result_lines: Vec::new(),
             wrapped_lines: Vec::new(),
+            reveal_counter: 0,
             running: true,
         }
     }
@@ -122,6 +126,7 @@ impl Model {
         self.command_result = Some(output.clone());
         self.result_lines = output.lines().map(|s| s.to_string()).collect();
         self.scroll_position = 0;
+        self.reveal_counter = 0;
     }
 
     /// Set command error
@@ -129,6 +134,7 @@ impl Model {
         self.command_error = Some(error.clone());
         self.result_lines = error.lines().map(|s| s.to_string()).collect();
         self.scroll_position = 0;
+        self.reveal_counter = 0;
     }
 
     /// Get total number of lines in current result
