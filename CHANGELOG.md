@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.8] - 2025-10-09
+
+### Refactor
+
+- Remove redundant parentheses in text brightness calculation
+
 ## [0.2.7] - 2025-10-09
 
 ### 🚀 Features
@@ -12,6 +18,10 @@ All notable changes to this project will be documented in this file.
 ### 📚 Documentation
 
 - Update README and CHANGELOG for v0.2.6
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 0.2.7
 
 ## [0.2.6] - 2025-10-02
 
