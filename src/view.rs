@@ -68,7 +68,7 @@ fn render_loading(model: &Model, area: Rect, buf: &mut Buffer) {
         .style(Style::default().fg(border_color));
 
     // Cycle text color for shimmer effect
-    let text_brightness = (170 + (color_phase * 85.0) as u8).min(255);
+    let text_brightness = (170 + (color_phase * 85.0) as u8);
     let text_color = Color::Rgb(text_brightness, text_brightness, 0);
 
     let loading_paragraph = Paragraph::new(loading_text)

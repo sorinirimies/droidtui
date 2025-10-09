@@ -210,7 +210,7 @@ dependencies = [
 
 [[package]]
 name = "droidtui"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "color-eyre",
  "crossterm",
