@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.7] - 2025-10-09
+
+### 🚀 Features
+
+- Add slide-in/slide-out animations with TachyonFX
+- Add impressive multi-layered loading animations
+
+### 📚 Documentation
+
+- Update README and CHANGELOG for v0.2.6
+
 ## [0.2.6] - 2025-10-02
 
 ### 🚀 Features
