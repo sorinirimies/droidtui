@@ -2,35 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.9] - 2025-01-XX
-
-### 🚀 Features
-
-- **Screen Streaming**: Add real-time device screen streaming in terminal as ASCII art (similar to scrcpy)
-  - Stream device screen with configurable refresh rates
-  - Multiple quality modes: Standard (~2 FPS), High Detail (~1 FPS), Fast (~5 FPS)
-  - Interactive controls: pause/resume, adjust refresh rate on the fly
-  - Frame counter and performance monitoring
-  - Lightweight implementation using ADB screencap
-- Add new dependencies: `image` for image processing, `base64` for encoding
+## [0.2.9] - 2025-10-15
 
 ### 📚 Documentation
 
-- Add comprehensive STREAMING.md documentation
-- Add STREAMING_QUICKSTART.md for quick start guide
-- Update README.md with screen streaming feature
-- Update FEATURES.md with detailed streaming documentation
-- Add comparison with scrcpy
-
-### 🏗️ Architecture
-
-- Add new `stream.rs` module for screen capture and ASCII conversion
-- Extend `Message` enum with streaming control messages
-- Extend `AppState` with `Streaming` state
-- Add streaming state fields to `Model`
-- Implement streaming frame capture in `update.rs`
-- Add streaming view rendering in `view.rs`
-- Add streaming keyboard controls in `app.rs`
+- Update README and CHANGELOG for v0.2.8
 
 ## [0.2.8] - 2025-10-09
 
