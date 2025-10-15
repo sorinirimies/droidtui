@@ -340,6 +340,28 @@ impl Default for Menu {
                 ],
             },
             MenuItem {
+                label: "📺 Screen Stream".to_string(),
+                description: "Stream device screen in separate window (like scrcpy)".to_string(),
+                command: "STREAM".to_string(),
+                children: vec![
+                    MenuChild {
+                        label: "📺 Start Screen Stream".to_string(),
+                        description: "Stream device screen in window (1080x1920, 8Mbps)".to_string(),
+                        command: "STREAM".to_string(),
+                    },
+                    MenuChild {
+                        label: "🔍 High Quality Stream".to_string(),
+                        description: "Higher quality stream (1080x1920, 12Mbps)".to_string(),
+                        command: "STREAM_HD".to_string(),
+                    },
+                    MenuChild {
+                        label: "⚡ Fast Stream".to_string(),
+                        description: "Lower resolution for speed (720x1280, 4Mbps)".to_string(),
+                        command: "STREAM_FAST".to_string(),
+                    },
+                ],
+            },
+            MenuItem {
                 label: "🧪 Test Scrolling".to_string(),
                 description: "Test command with long output to demonstrate scrolling".to_string(),
                 command: "./test_long_output.sh".to_string(),

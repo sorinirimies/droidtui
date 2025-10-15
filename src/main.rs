@@ -6,6 +6,7 @@ pub mod event;
 pub mod menu;
 pub mod message;
 pub mod model;
+pub mod stream;
 pub mod update;
 pub mod view;
 

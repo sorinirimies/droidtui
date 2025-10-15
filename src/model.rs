@@ -1,5 +1,6 @@
 use crate::effects::EffectsManager;
 use crate::menu::Menu;
+use crate::stream::StreamState;
 use std::time::Instant;
 
 /// Application state following Elm architecture
@@ -41,6 +42,9 @@ pub struct Model {
 
     /// Whether the application should continue running
     pub running: bool,
+
+    /// Screen streaming state (window-based)
+    pub stream_state: Option<StreamState>,
 }
 
 /// Application states
@@ -84,6 +88,7 @@ impl Model {
             wrapped_lines: Vec::new(),
             reveal_counter: 0,
             running: true,
+            stream_state: None,
         }
     }
 

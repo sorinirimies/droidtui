@@ -1,5 +1,6 @@
 use crate::message::{CommandResult, Message};
 use crate::model::{AppState, Model};
+use crate::stream::{start_stream, StreamConfig};
 use tokio::process::Command as AsyncCommand;
 
 /// Update function - the heart of Elm architecture
@@ -28,6 +29,40 @@ pub async fn update(model: &mut Model, message: Message) {
 
         // Command execution
         Message::ExecuteCommand(command) => {
+            // Check if this is a stream command
+            if command.starts_with("STREAM") {
+                // Configure based on stream type
+                let config = match command.as_str() {
+                    "STREAM_HD" => StreamConfig {
+                        width: 1080,
+                        height: 1920,
+                        bitrate: "12M".to_string(),
+                    },
+                    "STREAM_FAST" => StreamConfig {
+                        width: 720,
+                        height: 1280,
+                        bitrate: "4M".to_string(),
+                    },
+                    _ => StreamConfig::default(),
+                };
+
+                // Launch streaming in separate window (non-blocking)
+                match start_stream(config) {
+                    Ok(stream_state) => {
+                        model.stream_state = Some(stream_state);
+                        // Don't change state - keep in menu
+                        model.set_result("Screen streaming started in separate window.\nClose the window or press Q in it to stop.".to_string());
+                        model.state = AppState::ShowResult;
+                    }
+                    Err(e) => {
+                        model.set_error(format!("Failed to start streaming: {}\n\nMake sure:\n- ADB is installed and in PATH\n- Device is connected\n- FFmpeg is installed", e));
+                        model.state = AppState::ShowResult;
+                    }
+                }
+                model.effects.start_slide_in();
+                return;
+            }
+
             model.state = AppState::Loading;
             model.clear_results();
             model.loading_counter = 0;
@@ -96,9 +131,49 @@ pub async fn update(model: &mut Model, message: Message) {
             model.scroll_position = model.total_result_lines().saturating_sub(1);
         }
 
+        // Screen streaming messages
+        Message::StartStream => {
+            let config = StreamConfig::default();
+            match start_stream(config) {
+                Ok(stream_state) => {
+                    model.stream_state = Some(stream_state);
+                    model.set_result("Screen streaming started in separate window.".to_string());
+                    model.state = AppState::ShowResult;
+                }
+                Err(e) => {
+                    model.set_error(format!("Failed to start streaming: {}", e));
+                    model.state = AppState::ShowResult;
+                }
+            }
+            model.effects.start_slide_in();
+        }
+
+        Message::StopStream => {
+            if let Some(mut stream) = model.stream_state.take() {
+                stream.stop();
+            }
+            model.state = AppState::Menu;
+        }
+
+        Message::UpdateFrame(_frame) => {
+            // No longer used with window-based streaming
+        }
+
+        Message::TogglePause => {
+            // No longer used with window-based streaming
+        }
+
+        Message::IncreaseRefreshRate => {
+            // No longer used with window-based streaming
+        }
+
+        Message::DecreaseRefreshRate => {
+            // No longer used with window-based streaming
+        }
+
         // Application lifecycle
         Message::Tick => {
-            tick(model);
+            tick(model).await;
         }
 
         Message::Quit => {
@@ -118,7 +193,7 @@ pub async fn update(model: &mut Model, message: Message) {
 }
 
 /// Handle tick updates (animations, timers, etc.)
-fn tick(model: &mut Model) {
+async fn tick(model: &mut Model) {
     let now = std::time::Instant::now();
     let elapsed = now.duration_since(model.last_tick);
     model.last_tick = now;
@@ -138,6 +213,8 @@ fn tick(model: &mut Model) {
     if model.state == AppState::ShowResult {
         model.reveal_counter += 1;
     }
+
+    // No frame capture needed - streaming happens in separate window
 
     // Check if startup is complete
     if model.state == AppState::Startup && model.effects.is_startup_complete() {

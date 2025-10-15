@@ -4,6 +4,14 @@ A comprehensive guide to all features and capabilities in DroidTUI - the Termina
 
 ## Core Features Overview
 
+### 📺 Screen Streaming System (NEW!)
+- **Real-time Streaming**: View Android device screen in terminal as ASCII art
+- **Multiple Quality Modes**: Choose between speed (fast) and detail (HD)
+- **Interactive Controls**: Pause/resume, adjust refresh rate on the fly
+- **Performance Monitoring**: Frame counter and FPS display
+- **Configurable Refresh Rates**: 100ms to 2000ms (0.5-10 FPS)
+- **Lightweight Implementation**: Uses standard ADB screencap command
+
 ### 🎨 Visual Effects System
 - **TachyonFX Integration**: Stunning visual effects powered by the TachyonFX library
 - **Startup Animation**: Dramatic reveal animation with center-out gradient sweep
@@ -12,7 +20,7 @@ A comprehensive guide to all features and capabilities in DroidTUI - the Termina
 - **Smooth Transitions**: All UI state changes include smooth visual transitions
 
 ### 📱 ADB Command System
-- **13 Command Categories**: Comprehensive coverage of Android development tasks
+- **14 Command Categories**: Comprehensive coverage of Android development tasks
 - **Real Command Execution**: Actual ADB commands with formatted output display
 - **Error Handling**: Intelligent error messages and troubleshooting hints
 - **Command Variations**: Each category includes multiple specific options
@@ -133,7 +141,26 @@ Network Information:
 └── 🔗 IP configuration (ip addr show)
 ```
 
-#### 4. 📷 Media & Logging
+#### 4. 📺 Screen Streaming
+```
+Screen Streaming:
+├── 📺 Start Screen Stream (standard, ~2 FPS)
+├── 🔍 High Detail Stream (detailed, ~1 FPS)
+└── ⚡ Fast Stream (fast, ~5 FPS)
+
+Controls During Streaming:
+- Space: Pause/Resume
+- +/-: Adjust refresh rate
+- q/Esc: Stop streaming
+
+Features:
+- Real-time ASCII art rendering
+- Frame counter and FPS display
+- Adjustable quality and speed
+- Minimal device impact
+```
+
+#### 5. 📷 Media & Logging
 ```
 Screenshot Capabilities:
 ├── 📸 Take & save locally (screencap + pull)
@@ -150,6 +177,83 @@ ADB Utilities:
 ├── 🔍 ADB version (adb version)
 ├── 🔧 ADB help (adb help)
 └── 📍 Installation path (which adb)
+```
+
+### Screen Streaming System
+
+#### 1. Streaming Modes
+```
+Standard Mode:
+- Refresh Rate: 500ms (~2 FPS)
+- Resolution: 120x50 characters
+- Quality: Balanced
+- Use Case: General monitoring
+
+High Detail Mode:
+- Refresh Rate: 1000ms (~1 FPS)
+- Resolution: 120x50 characters
+- Quality: Maximum detail
+- Use Case: Detailed screen inspection
+
+Fast Mode:
+- Refresh Rate: 200ms (~5 FPS)
+- Resolution: 120x50 characters
+- Quality: Lower detail, faster updates
+- Use Case: Real-time monitoring
+```
+
+#### 2. Technical Implementation
+```
+Process Flow:
+1. Capture: adb exec-out screencap -p
+2. Decode: PNG image decoding
+3. Resize: Scale to terminal dimensions
+4. Convert: Grayscale to ASCII characters
+5. Display: Render in TUI
+
+ASCII Conversion:
+- Brightness-based character mapping
+- Palette: " .:-=+*#%@" (dark to bright)
+- Grayscale conversion for simplicity
+- Optimized for terminal readability
+```
+
+#### 3. Performance Characteristics
+```
+Latency:
+- Capture: ~100-200ms
+- Processing: ~50-100ms
+- Display: ~10-20ms
+- Total: ~200-500ms per frame
+
+Bandwidth:
+- Screenshot size: ~100-500KB per frame
+- Network impact: Minimal (local USB/WiFi)
+- CPU usage: Moderate (image processing)
+
+Optimization:
+- Adjustable refresh rates
+- Pause functionality to reduce load
+- Efficient ASCII conversion algorithm
+- Minimal memory allocation
+```
+
+#### 4. Use Cases
+```
+✅ Good For:
+- Quick device monitoring
+- Terminal-only environments (SSH)
+- Checking app layouts
+- Monitoring background processes
+- Logging/automation workflows
+- Development on remote servers
+
+❌ Not Ideal For:
+- High-precision UI testing
+- Gaming or video playback
+- Touch input simulation
+- Real-time interaction
+- Color-critical applications
 ```
 
 ### Navigation System
@@ -357,6 +461,64 @@ Development Ideas:
 - Network analysis tools
 ```
 
+#### 4. Streaming Enhancements
+```
+Future Improvements:
+- Color ASCII art using ANSI colors
+- Sixel/Kitty graphics protocol support
+- Higher frame rates with optimization
+- Recording streams to file
+- Multiple device streams simultaneously
+- Region-of-interest streaming
+- Touch input forwarding
+- Hardware acceleration
+- Adaptive quality based on terminal size
+- Network streaming over TCP/IP
+```
+
+### Screen Streaming Comparison
+
+#### vs. Scrcpy
+```
+DroidTUI Streaming:
++ Terminal-based, works over SSH
++ No GUI dependencies
++ Integrated with ADB commands
++ Lightweight installation
+- Lower frame rate (~1-5 FPS)
+- ASCII art only (no true video)
+- View-only (no control)
+- Higher latency
+
+Scrcpy:
++ High frame rate (30-120 FPS)
++ True video quality
++ Full device control
++ Low latency (~35-70ms)
+- Requires GUI environment
+- Separate application
+- More complex setup
+```
+
+#### Recommended Usage
+```
+Use DroidTUI Streaming When:
+- Working in terminal-only environment
+- Quick device screen checks needed
+- Monitoring background processes
+- Logging/automation workflows
+- Remote server development
+- Terminal aesthetics preferred
+
+Use Scrcpy When:
+- Full device control needed
+- High frame rate required
+- Video playback monitoring
+- UI testing and debugging
+- Gaming or animations
+- Precision touch input needed
+```
+
 ---
 
-**Note**: This documentation covers all current features as of version 0.2.0. Features are actively developed and may be expanded in future versions.
+**Note**: This documentation covers all current features including the new Screen Streaming feature as of version 0.2.9. Features are actively developed and may be expanded in future versions.

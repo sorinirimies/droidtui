@@ -1,7 +1,7 @@
 # DroidTUI 🤖
 
 [![Crates.io](https://img.shields.io/crates/v/droidtui.svg)](https://crates.io/crates/droidtui)
-![Version](https://img.shields.io/badge/version-0.2.8-blue.svg)
+![Version](https://img.shields.io/badge/version-0.2.9-blue.svg)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Release](https://github.com/sorinirimies/droidtui/actions/workflows/release.yml/badge.svg)](https://github.com/sorinirimies/droidtui/actions/workflows/release.yml)
 [![CI](https://github.com/sorinirimies/droidtui/actions/workflows/ci.yml/badge.svg)](https://github.com/sorinirimies/droidtui/actions/workflows/ci.yml)
@@ -12,7 +12,8 @@ A beautiful Terminal User Interface (TUI) for Android development, providing an 
 
 - **🎨 Beautiful UI**: Clean, modern terminal interface with consistent Android green theming
 - **🌟 TachyonFX Animations**: Dramatic reveal animations and gradient effects
-- **📱 ADB Command Center**: 13 functional ADB command categories with real-time execution
+- **📱 ADB Command Center**: 14 functional ADB command categories with real-time execution
+- **📺 Screen Streaming**: Stream your Android device screen in a separate window with real video (like scrcpy!)
 - **📜 Scrollable Results**: Navigate through long command output with visual scroll indicators
 - **🎭 Clean Design**: Static Android green selections and professional layout borders
 - **⌨️ Keyboard Navigation**: Intuitive vim-like navigation (j/k) and arrow keys
@@ -24,6 +25,7 @@ A beautiful Terminal User Interface (TUI) for Android development, providing an 
 ### Prerequisites
 
 - Android SDK with ADB in your PATH
+- FFmpeg (for video decoding during screen streaming)
 
 ### Install from crates.io
 
@@ -89,6 +91,8 @@ The main interface provides access to functional ADB commands with expandable su
   - Normal reboot, fast reboot (bootloader), recovery mode
 - **📜 System Log** ▶ - View recent system logs (last 100 lines)
   - Recent logs, errors only, warnings & errors, clear logs
+- **📺 Screen Stream** ▶ - Stream device screen in separate window (like scrcpy)
+  - Start screen stream, high quality stream, fast stream
 - **🔍 ADB Version** ▶ - Display ADB version information
   - ADB version, ADB help, ADB installation path
 
@@ -107,6 +111,8 @@ The main interface provides access to functional ADB commands with expandable su
 | `End` | Jump to end of results |
 | `q` / `Esc` | Quit application / Return from results |
 | `Ctrl+C` | Force quit |
+
+**Note**: Screen streaming opens in a separate window. Close the window or press Q/Esc in it to stop streaming.
 
 ### Interface Layout
 
@@ -130,6 +136,7 @@ The interface adapts based on navigation mode:
 - **tachyonfx**: Visual effects and animations
 - **color-eyre**: Beautiful error handling
 - **futures**: Async utilities
+- **minifb**: Window creation for screen streaming
 
 ## Technical Details 🔧
 
@@ -148,8 +155,12 @@ src/
 ├── main.rs          # Application entry point
 ├── app.rs           # Main application logic and state management
 ├── event.rs         # Event handling system
-├── ui.rs            # User interface rendering
+├── view.rs          # User interface rendering
 ├── menu.rs          # Menu system and ADB commands
+├── model.rs         # Application state model
+├── message.rs       # Message types for state updates
+├── update.rs        # State update logic
+├── stream.rs        # Screen streaming functionality
 └── effects.rs       # Visual effects and animations
 ```
 
