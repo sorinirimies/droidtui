@@ -24,9 +24,7 @@ See [CHANGELOG.md](CHANGELOG.md) for full release notes.
 
 ## Features ✨
 
-- **🎨 Beautiful UI**: Clean, modern terminal interface with consistent Android green theming
-- **🌟 TachyonFX Animations**: Dramatic reveal animations and gradient effects
-- **📱 Type-Safe ADB Commands**: 14 functional ADB command categories with typed, error-safe execution
+- **📱 Type-Safe ADB Commands**: using the `adb_cli` (adb_client) crate the ADB command categories are now typed, error-safe execution and there is no need for the Google Android Debug Bridge (ADB) to be installed
 - **📺 Screen Streaming**: Stream your Android device screen in a separate window with real video (like scrcpy!)
 - **📜 Scrollable Results**: Navigate through long command output with visual scroll indicators
 - **🎭 Clean Design**: Static Android green selections and professional layout borders
@@ -35,6 +33,8 @@ See [CHANGELOG.md](CHANGELOG.md) for full release notes.
 - **🔧 Real Command Execution**: Direct ADB server communication with comprehensive error handling
 - **📚 Extensive Examples**: 5+ runnable examples demonstrating all features
 - **🎬 VHS Demos**: Animated terminal recordings showcasing the TUI in action
+- **🎨 Beautiful UI**: Clean, modern terminal interface with consistent Android green theming
+- **🌟 TachyonFX Animations**: Dramatic reveal animations and gradient effects
 
 ## Installation 🔧
 
@@ -86,7 +86,7 @@ The main interface provides access to functional ADB commands with expandable su
 - **📱 List Devices** ▶ - Show all connected Android devices with detailed info
   - Basic device list, detailed info, serial numbers only
 - **📋 List Packages** ▶ - List all installed packages with file paths
-  - All packages, with paths, user packages only, system packages only  
+  - All packages, with paths, user packages only, system packages only
 - **🔋 Battery Info** ▶ - Display detailed battery information and status
   - Full battery status, battery level only, charging status
 - **💾 Memory Usage** ▶ - Show comprehensive memory usage statistics
@@ -140,7 +140,7 @@ The interface adapts based on navigation mode:
 3. **Footer**: Navigation help and keyboard shortcuts
 
 **Child Menu Mode:**
-1. **Left Panel (40%)**: Category overview with current selection highlighted (dark gray border) 
+1. **Left Panel (40%)**: Category overview with current selection highlighted (dark gray border)
 2. **Right Panel (60%)**: Expanded sub-options for the selected category (Android green border)
 3. **Footer**: Updated navigation help for child menu mode
 
