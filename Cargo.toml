@@ -1,6 +1,6 @@
 [package]
 name = "droidtui"
-version = "0.2.9"
+version = "0.3.0"
 description = "A beautiful Terminal User Interface (TUI) for Android development and ADB commands"
 authors = ["Sorin Albu-Irimies <mihaiirimies@gmail.com>"]
 license = "MIT"
@@ -11,6 +11,10 @@ documentation = "https://docs.rs/droidtui"
 keywords = ["android", "adb", "tui", "terminal", "cli"]
 categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
+
+[lib]
+name = "droidtui"
+path = "src/lib.rs"
 
 [[bin]]
 name = "droidtui"
@@ -25,3 +29,4 @@ color-eyre = "0.6.3"
 tachyonfx = "0.7.0"
 ratatui-widgets = "0.2.2"
 minifb = "0.27.0"
+adb_client = "2.1.17"

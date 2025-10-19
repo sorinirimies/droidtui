@@ -1,0 +1,8 @@
+# VHS output files
+*.gif
+*.mp4
+*.webm
+
+# VHS temporary files
+.vhs/
+*.log

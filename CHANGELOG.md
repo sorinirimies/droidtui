@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2025-10-19
+
+### 📚 Documentation
+
+- Update README and CHANGELOG for v0.2.9
+
 ## [0.2.9] - 2025-10-15
 
 ### 📚 Documentation
