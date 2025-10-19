@@ -32,6 +32,12 @@ TAPES=(
     "quickstart"
     "main_menu"
     "full_demo"
+    "streaming"
+    "device_info"
+    "navigation_showcase"
+    "package_manager"
+    "all_examples"
+    "features_highlight"
 )
 
 # Generate each demo

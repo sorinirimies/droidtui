@@ -67,11 +67,8 @@ impl App {
                 AppEvent::MenuUp => Message::MenuUp,
                 AppEvent::MenuDown => Message::MenuDown,
                 AppEvent::Execute => {
-                    if let Some(command) = self.model.get_selected_command() {
-                        Message::ExecuteCommand(command)
-                    } else {
-                        return Ok(None);
-                    }
+                    let command = self.model.get_selected_command();
+                    Message::ExecuteCommand(command)
                 }
                 AppEvent::EnterChild => Message::EnterChild,
                 AppEvent::ExitChild => Message::ExitChild,
@@ -91,9 +88,8 @@ impl App {
                 KeyCode::Down | KeyCode::Char('j') => Some(Message::MenuDown),
                 KeyCode::Enter => {
                     if self.model.menu.is_in_child_mode() {
-                        self.model
-                            .get_selected_command()
-                            .map(Message::ExecuteCommand)
+                        let command = self.model.get_selected_command();
+                        Some(Message::ExecuteCommand(command))
                     } else {
                         Some(Message::EnterChild)
                     }

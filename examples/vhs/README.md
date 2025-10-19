@@ -118,6 +118,140 @@ vhs examples/vhs/full_demo.tape
 
 ---
 
+### 4. `streaming.tape`
+
+**Screen streaming demo** featuring the streaming example with scrcpy integration.
+
+**Generate:**
+```bash
+vhs examples/vhs/streaming.tape
+```
+
+**Output:** `streaming.gif` (~3-5 MB)
+
+**Shows:**
+- Multiple quality presets (480p to 1080p+)
+- Gaming mode with 60fps support
+- Recording capabilities
+- Read-only viewing mode
+- Various streaming options
+
+**Use case:** Showcasing screen streaming features, scrcpy integration demos
+
+---
+
+### 5. `device_info.tape`
+
+**Device information query demo** showing how to query various device details.
+
+**Generate:**
+```bash
+vhs examples/vhs/device_info.tape
+```
+
+**Output:** `device_info.gif` (~3-4 MB)
+
+**Shows:**
+- Hardware information queries
+- System properties display
+- Network status information
+- Battery and storage details
+- Security patch information
+
+**Use case:** Device information feature demos, ADB query examples
+
+---
+
+### 6. `navigation_showcase.tape`
+
+**Navigation features demo** highlighting vim-like navigation and smooth animations.
+
+**Generate:**
+```bash
+vhs examples/vhs/navigation_showcase.tape
+```
+
+**Output:** `navigation_showcase.gif` (~4-5 MB)
+
+**Shows:**
+- Vim-style j/k navigation
+- Arrow key support
+- Menu and submenu navigation
+- Quick scrolling
+- Smooth animations
+
+**Use case:** UI/UX demonstrations, navigation tutorials
+
+---
+
+### 7. `package_manager.tape`
+
+**Package management demo** featuring app installation, permissions, and management.
+
+**Generate:**
+```bash
+vhs examples/vhs/package_manager.tape
+```
+
+**Output:** `package_manager.gif` (~3-5 MB)
+
+**Shows:**
+- Package listing and queries
+- App installation/uninstallation
+- Permission management
+- Cache and data clearing
+- Enable/disable apps
+
+**Use case:** Package management feature demos, app management tutorials
+
+---
+
+### 8. `all_examples.tape`
+
+**Comprehensive showcase** featuring all standalone examples in one demo.
+
+**Generate:**
+```bash
+vhs examples/vhs/all_examples.tape
+```
+
+**Output:** `all_examples.gif` (~6-8 MB)
+
+**Shows:**
+- Quick tour of main_menu example
+- Device information queries
+- Package management operations
+- Screen streaming options
+- Brief full application demo
+- All 4 standalone examples
+
+**Use case:** Overview presentations, comprehensive feature showcase
+
+---
+
+### 9. `features_highlight.tape`
+
+**Features showcase** highlighting the best and most impressive features of DroidTUI.
+
+**Generate:**
+```bash
+vhs examples/vhs/features_highlight.tape
+```
+
+**Output:** `features_highlight.gif` (~5-7 MB)
+
+**Shows:**
+- TachyonFX startup animation
+- Smooth vim-like navigation
+- Multi-level menu system
+- All 14 command categories
+- Lightning fast workflow
+- Beautiful theming throughout
+
+**Use case:** Marketing material, feature presentations, social media highlights
+
+---
+
 ## Quick Start
 
 ### Generate All Demos
@@ -338,15 +472,63 @@ To share demos:
 - [VHS Examples](https://github.com/charmbracelet/vhs/tree/main/examples)
 - [Charm.sh Blog](https://charm.sh/blog/)
 
+## Summary of Tapes
+
+| Tape | Duration | Size | Purpose |
+|------|----------|------|---------|
+| `quickstart.tape` | ~30s | 1-2 MB | Quick social media demo |
+| `main_menu.tape` | ~45s | 2-3 MB | Example showcase |
+| `full_demo.tape` | ~60s | 4-6 MB | Complete app walkthrough |
+| `streaming.tape` | ~45s | 3-5 MB | Streaming features |
+| `device_info.tape` | ~50s | 3-4 MB | Device queries |
+| `navigation_showcase.tape` | ~55s | 4-5 MB | Navigation demo |
+| `package_manager.tape` | ~50s | 3-5 MB | Package management |
+| `all_examples.tape` | ~90s | 6-8 MB | Comprehensive tour |
+| `features_highlight.tape` | ~60s | 5-7 MB | Best features showcase |
+
 ## Contributing
 
 When adding new VHS tapes:
 
 1. Create the `.tape` file in this directory
-2. Test it multiple times
-3. Update this README with tape details
-4. Add the tape to `generate_all.sh` script
-5. Document the use case and output
+2. Create a corresponding example in `examples/` (if needed)
+3. Test it multiple times to ensure consistency
+4. Update this README with tape details
+5. Add the tape to `generate_all.sh` script
+6. Document the use case and output
+7. Consider file size and demo length (keep under 60 seconds if possible)
+
+---
+
+## Available Examples
+
+DroidTUI provides several standalone examples that can be run independently:
+
+### `main_menu.rs`
+Basic menu navigation example with 13 ADB commands.
+```bash
+cargo run --example main_menu
+```
+
+### `streaming.rs`
+Screen streaming options with scrcpy integration and quality presets.
+```bash
+cargo run --example streaming
+```
+
+### `device_info.rs`
+Comprehensive device information queries (16 categories).
+```bash
+cargo run --example device_info
+```
+
+### `package_manager.rs`
+Package management operations including install, uninstall, and permissions (20 actions).
+```bash
+cargo run --example package_manager
+```
+
+Each example demonstrates specific features and can be used as reference implementations.
 
 ---
 

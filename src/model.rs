@@ -1,3 +1,4 @@
+use crate::adb::{AdbCommand, AdbManager};
 use crate::effects::EffectsManager;
 use crate::menu::Menu;
 use crate::stream::StreamState;
@@ -45,6 +46,9 @@ pub struct Model {
 
     /// Screen streaming state (window-based)
     pub stream_state: Option<StreamState>,
+
+    /// ADB client manager
+    pub adb_manager: AdbManager,
 }
 
 /// Application states
@@ -89,6 +93,7 @@ impl Model {
             reveal_counter: 0,
             running: true,
             stream_state: None,
+            adb_manager: AdbManager::new(),
         }
     }
 
@@ -112,8 +117,8 @@ impl Model {
         self.state != AppState::Startup || self.effects.is_startup_complete()
     }
 
-    /// Get the currently selected command, if any
-    pub fn get_selected_command(&self) -> Option<String> {
+    /// Get the currently selected command
+    pub fn get_selected_command(&self) -> AdbCommand {
         self.menu.get_selected_command()
     }
 

@@ -132,3 +132,35 @@ info:
 # View changelog
 view-changelog:
     @cat CHANGELOG.md
+
+# Run example: main menu
+example-menu:
+    cargo run --example main_menu
+
+# Build all examples
+examples:
+    cargo build --examples
+
+# Generate VHS demo (requires vhs: brew install vhs)
+vhs-quickstart:
+    vhs examples/vhs/quickstart.tape
+    @echo "✅ Generated examples/vhs/quickstart.gif"
+
+# Generate main menu VHS demo
+vhs-menu:
+    vhs examples/vhs/main_menu.tape
+    @echo "✅ Generated examples/vhs/main_menu.gif"
+
+# Generate full demo VHS
+vhs-full:
+    vhs examples/vhs/full_demo.tape
+    @echo "✅ Generated examples/vhs/full_demo.gif"
+
+# Generate all VHS demos
+vhs-all:
+    ./examples/vhs/generate_all.sh
+
+# Check if VHS is installed
+vhs-check:
+    @command -v vhs >/dev/null 2>&1 || { echo "❌ VHS not installed. Install with: brew install vhs"; exit 1; }
+    @echo "✅ VHS is installed"

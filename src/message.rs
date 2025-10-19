@@ -1,3 +1,5 @@
+use crate::adb::AdbCommand;
+
 /// Messages represent all possible actions/events in the application
 /// This follows the Elm architecture pattern for clear state transitions
 #[derive(Debug, Clone)]
@@ -9,7 +11,7 @@ pub enum Message {
     ExitChild,
 
     // Command execution
-    ExecuteCommand(String),
+    ExecuteCommand(AdbCommand),
     CommandStarted,
     CommandCompleted(CommandResult),
 

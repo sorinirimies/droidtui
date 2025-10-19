@@ -104,14 +104,11 @@ fn render_loading(model: &Model, area: Rect, buf: &mut Buffer) {
 
 /// Render executing screen
 fn render_executing(model: &Model, area: Rect, buf: &mut Buffer) {
-    let executing_text = if let Some(command) = model.get_selected_command() {
-        format!(
-            "Executing command...\n\nCommand: {}\n\nPress Esc to return to menu",
-            command
-        )
-    } else {
-        "Executing command...\n\nPress Esc to return to menu".to_string()
-    };
+    let command = model.get_selected_command();
+    let executing_text = format!(
+        "Executing command...\n\nCommand: {:?}\n\nPress Esc to return to menu",
+        command
+    );
 
     let executing_block = Block::bordered()
         .title("⚡ Executing Command")

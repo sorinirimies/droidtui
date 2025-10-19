@@ -1,7 +1,7 @@
+use crate::adb::AdbCommand;
 use crate::message::{CommandResult, Message};
 use crate::model::{AppState, Model};
 use crate::stream::{start_stream, StreamConfig};
-use tokio::process::Command as AsyncCommand;
 
 /// Update function - the heart of Elm architecture
 /// Takes the current model and a message, returns updated model
@@ -29,38 +29,39 @@ pub async fn update(model: &mut Model, message: Message) {
 
         // Command execution
         Message::ExecuteCommand(command) => {
-            // Check if this is a stream command
-            if command.starts_with("STREAM") {
-                // Configure based on stream type
-                let config = match command.as_str() {
-                    "STREAM_HD" => StreamConfig {
-                        width: 1080,
-                        height: 1920,
-                        bitrate: "12M".to_string(),
-                    },
-                    "STREAM_FAST" => StreamConfig {
-                        width: 720,
-                        height: 1280,
-                        bitrate: "4M".to_string(),
-                    },
-                    _ => StreamConfig::default(),
-                };
+            // Check if this is a stream command (legacy support)
+            if let AdbCommand::Shell { command: cmd } = &command {
+                if cmd.starts_with("STREAM") {
+                    // Configure based on stream type
+                    let config = match cmd.as_str() {
+                        "STREAM_HD" => StreamConfig {
+                            width: 1080,
+                            height: 1920,
+                            bitrate: "12M".to_string(),
+                        },
+                        "STREAM_FAST" => StreamConfig {
+                            width: 720,
+                            height: 1280,
+                            bitrate: "4M".to_string(),
+                        },
+                        _ => StreamConfig::default(),
+                    };
 
-                // Launch streaming in separate window (non-blocking)
-                match start_stream(config) {
-                    Ok(stream_state) => {
-                        model.stream_state = Some(stream_state);
-                        // Don't change state - keep in menu
-                        model.set_result("Screen streaming started in separate window.\nClose the window or press Q in it to stop.".to_string());
-                        model.state = AppState::ShowResult;
+                    // Launch streaming in separate window (non-blocking)
+                    match start_stream(config) {
+                        Ok(stream_state) => {
+                            model.stream_state = Some(stream_state);
+                            model.set_result("Screen streaming started in separate window.\nClose the window or press Q in it to stop.".to_string());
+                            model.state = AppState::ShowResult;
+                        }
+                        Err(e) => {
+                            model.set_error(format!("Failed to start streaming: {}\n\nMake sure:\n- ADB is installed and in PATH\n- Device is connected\n- FFmpeg is installed", e));
+                            model.state = AppState::ShowResult;
+                        }
                     }
-                    Err(e) => {
-                        model.set_error(format!("Failed to start streaming: {}\n\nMake sure:\n- ADB is installed and in PATH\n- Device is connected\n- FFmpeg is installed", e));
-                        model.state = AppState::ShowResult;
-                    }
+                    model.effects.start_slide_in();
+                    return;
                 }
-                model.effects.start_slide_in();
-                return;
             }
 
             model.state = AppState::Loading;
@@ -68,7 +69,7 @@ pub async fn update(model: &mut Model, message: Message) {
             model.loading_counter = 0;
             model.effects.reset_slide();
 
-            let result = execute_command(&command).await;
+            let result = execute_adb_command(model, command).await;
 
             // Handle result directly to avoid recursion
             match result {
@@ -214,67 +215,38 @@ async fn tick(model: &mut Model) {
         model.reveal_counter += 1;
     }
 
-    // No frame capture needed - streaming happens in separate window
-
     // Check if startup is complete
     if model.state == AppState::Startup && model.effects.is_startup_complete() {
         model.state = AppState::Menu;
     }
 }
 
-/// Execute a shell command asynchronously
-async fn execute_command(command: &str) -> CommandResult {
-    let command_parts: Vec<&str> = command.split_whitespace().collect();
-
-    if command_parts.is_empty() {
-        return CommandResult::Error("Invalid command".to_string());
-    }
-
-    let mut cmd = AsyncCommand::new(command_parts[0]);
-    if command_parts.len() > 1 {
-        cmd.args(&command_parts[1..]);
-    }
-
-    match cmd.output().await {
-        Ok(output) => {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            let stderr = String::from_utf8_lossy(&output.stderr);
-
-            if output.status.success() {
-                let result_text = if stdout.trim().is_empty() && !stderr.trim().is_empty() {
-                    // Some commands output to stderr even on success
-                    stderr.to_string()
-                } else if stdout.trim().is_empty() {
-                    "Command executed successfully (no output)".to_string()
-                } else {
-                    stdout.to_string()
-                };
-                CommandResult::Success(result_text)
-            } else {
-                let error_msg = if stderr.trim().is_empty() {
-                    format!("Command failed with exit code: {}", output.status)
-                } else {
-                    stderr.to_string()
-                };
-                CommandResult::Error(error_msg)
-            }
-        }
+/// Execute an ADB command using the ADB manager
+async fn execute_adb_command(model: &mut Model, command: AdbCommand) -> CommandResult {
+    // Execute the command using the ADB manager
+    match model.adb_manager.execute(command) {
+        Ok(output) => CommandResult::Success(output),
         Err(e) => {
-            let error_msg = match e.kind() {
-                std::io::ErrorKind::NotFound => {
-                    if command_parts[0] == "adb" {
-                        "ADB not found. Please install Android SDK tools and add ADB to your PATH."
-                            .to_string()
-                    } else {
-                        format!("Command '{}' not found", command_parts[0])
-                    }
-                }
-                std::io::ErrorKind::PermissionDenied => {
-                    "Permission denied. You may need to run with elevated privileges.".to_string()
-                }
-                _ => format!("Failed to execute command: {}", e),
+            let error_msg = format!("{}", e);
+
+            // Add helpful context for common errors
+            let enhanced_error = if error_msg.contains("Connection")
+                || error_msg.contains("connection")
+            {
+                format!(
+                    "{}\n\nTroubleshooting:\n• Make sure ADB server is running (adb start-server)\n• Check that device is connected (adb devices)\n• Verify USB debugging is enabled on device",
+                    error_msg
+                )
+            } else if error_msg.contains("No device selected") {
+                format!(
+                    "{}\n\nPlease:\n• Connect an Android device via USB\n• Enable USB debugging on the device\n• Run 'List Devices' to detect your device",
+                    error_msg
+                )
+            } else {
+                error_msg
             };
-            CommandResult::Error(error_msg)
+
+            CommandResult::Error(enhanced_error)
         }
     }
 }
@@ -321,5 +293,30 @@ mod tests {
         // Can't scroll past end
         update(&mut model, Message::ScrollDown).await;
         assert_eq!(model.scroll_position, 1);
+    }
+
+    #[tokio::test]
+    async fn test_enter_exit_child_mode() {
+        let mut model = Model::new();
+        model.state = AppState::Menu;
+
+        update(&mut model, Message::EnterChild).await;
+        assert!(model.menu.is_in_child_mode());
+
+        update(&mut model, Message::ExitChild).await;
+        assert!(!model.menu.is_in_child_mode());
+    }
+
+    #[tokio::test]
+    async fn test_clear_results() {
+        let mut model = Model::new();
+        model.set_result("Test output".to_string());
+        assert!(model.command_result.is_some());
+        assert!(!model.result_lines.is_empty());
+
+        update(&mut model, Message::ReturnToMenu).await;
+        assert!(model.command_result.is_none());
+        assert!(model.result_lines.is_empty());
+        assert_eq!(model.state, AppState::Menu);
     }
 }
