@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2025-10-19
+
+### ⚙️ Miscellaneous Tasks
+
+- Bump version to 0.3.2 - ([d003d55](https://github.com/sorinirimies/droidtui/commit/d003d5512c37b483b43ec5bb257f75c38f1655ef))
+
+
 ## [0.3.1] - 2025-10-19
 
 ### ⚙️ Miscellaneous Tasks
