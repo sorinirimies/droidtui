@@ -171,15 +171,25 @@ release-gitea version: check-all check-git-cliff check-nu
     git push gitea v{{version}}
     @echo "✅ Release v{{version}} pushed to Gitea."
 
-# Full automated release to both GitHub and Gitea.
+# Full automated release to Gitea (nexus-lab instance) only.
+release-gitea-nexus-lab version: check-all check-git-cliff check-nu
+    nu scripts/bump_version.nu --yes {{version}}
+    @echo "Pushing branch and tag to Gitea (nexus-lab)..."
+    git push gitea-nexus-lab main
+    git push gitea-nexus-lab v{{version}}
+    @echo "✅ Release v{{version}} pushed to Gitea (nexus-lab)."
+
+# Full automated release to GitHub, Gitea, and Gitea (nexus-lab).
 release-all version: check-all check-git-cliff check-nu
     nu scripts/bump_version.nu --yes {{version}}
     @echo "Pushing branch and tag to GitHub and Gitea..."
     git push origin main
     git push gitea main
+    git push gitea-nexus-lab main
     git push origin v{{version}}
     git push gitea v{{version}}
-    @echo "✅ Release v{{version}} pushed to both remotes."
+    git push gitea-nexus-lab v{{version}}
+    @echo "✅ Release v{{version}} pushed to all remotes."
 
 # ── Application ───────────────────────────────────────────────────────────────
 
@@ -258,11 +268,16 @@ pull:
 pull-gitea:
     git pull gitea main
 
-# Pull from both remotes
+# Pull from Gitea (nexus-lab instance)
+pull-gitea-nexus-lab:
+    git pull gitea-nexus-lab main
+
+# Pull from all remotes
 pull-all:
     git pull origin main
     git pull gitea main
-    @echo "✅ Pulled from both!"
+    git pull gitea-nexus-lab main
+    @echo "✅ Pulled from all!"
 
 # Push to GitHub
 push:
@@ -272,27 +287,39 @@ push:
 push-gitea:
     git push gitea main
 
-# Push to both GitHub and Gitea
+# Push to Gitea (nexus-lab instance)
+push-gitea-nexus-lab:
+    git push gitea-nexus-lab main
+
+# Push to GitHub, Gitea, and Gitea (nexus-lab)
 push-all:
     git push origin main
     git push gitea main
-    @echo "✅ Pushed to both!"
+    git push gitea-nexus-lab main
+    @echo "✅ Pushed to all!"
 
 # Push tags to GitHub
 push-tags:
     git push origin --tags
 
-# Push tags to both remotes
+# Push tags to all remotes
 push-tags-all:
     git push origin --tags
     git push gitea --tags
-    @echo "✅ Tags pushed to both!"
+    git push gitea-nexus-lab --tags
+    @echo "✅ Tags pushed to all!"
 
 # Force-sync Gitea from GitHub
 sync-gitea:
     git push gitea main --force
     git push gitea --tags --force
     @echo "✅ Gitea synced!"
+
+# Force-sync Gitea (nexus-lab) from GitHub
+sync-gitea-nexus-lab:
+    git push gitea-nexus-lab main --force
+    git push gitea-nexus-lab --tags --force
+    @echo "✅ Gitea (nexus-lab) synced!"
 
 # ── Misc ─────────────────────────────────────────────────────────────────────
 
