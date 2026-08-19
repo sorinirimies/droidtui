@@ -163,13 +163,13 @@ release version: check-all check-git-cliff check-nu
     git push origin v{{version}}
     @echo "✅ Release v{{version}} pushed — GitHub Actions will handle the rest."
 
-# Full automated release to Gitea only.
-release-gitea version: check-all check-git-cliff check-nu
+# Full automated release to Gitea Microlab only.
+release-gitea-microlab version: check-all check-git-cliff check-nu
     nu scripts/bump_version.nu --yes {{version}}
-    @echo "Pushing branch and tag to Gitea..."
-    git push gitea main
-    git push gitea v{{version}}
-    @echo "✅ Release v{{version}} pushed to Gitea."
+    @echo "Pushing branch and tag to Gitea Microlab..."
+    git push gitea-microlab main
+    git push gitea-microlab v{{version}}
+    @echo "✅ Release v{{version}} pushed to Gitea Microlab."
 
 # Full automated release to Gitea (nexus-lab instance) only.
 release-gitea-nexus-lab version: check-all check-git-cliff check-nu
@@ -179,15 +179,25 @@ release-gitea-nexus-lab version: check-all check-git-cliff check-nu
     git push gitea-nexus-lab v{{version}}
     @echo "✅ Release v{{version}} pushed to Gitea (nexus-lab)."
 
+# Full automated release to Gitea Starscream only.
+release-gitea-starscream version: check-all check-git-cliff check-nu
+    nu scripts/bump_version.nu --yes {{version}}
+    @echo "Pushing branch and tag to Gitea Starscream..."
+    git push gitea-starscream main
+    git push gitea-starscream v{{version}}
+    @echo "✅ Release v{{version}} pushed to Gitea Starscream."
+
 # Full automated release to GitHub, Gitea, and Gitea (nexus-lab).
 release-all version: check-all check-git-cliff check-nu
     nu scripts/bump_version.nu --yes {{version}}
     @echo "Pushing branch and tag to GitHub and Gitea..."
     git push origin main
-    git push gitea main
+    git push gitea-microlab main
+    git push gitea-starscream main
     git push gitea-nexus-lab main
     git push origin v{{version}}
-    git push gitea v{{version}}
+    git push gitea-microlab v{{version}}
+    git push gitea-starscream v{{version}}
     git push gitea-nexus-lab v{{version}}
     @echo "✅ Release v{{version}} pushed to all remotes."
 
@@ -250,10 +260,10 @@ remotes:
     @echo "Configured git remotes:"
     @git remote -v
 
-# Add a Gitea remote (usage: just setup-gitea https://gitea.example.com/user/repo.git)
+# Add a Gitea remote (usage: just setup-gitea https://gitea-microlab.example.com/user/repo.git)
 setup-gitea url:
-    git remote add gitea {{url}}
-    @echo "✅ Gitea remote added! Test with: git push gitea main"
+    git remote add gitea-microlab {{url}}
+    @echo "✅ Gitea remote added! Test with: git push gitea-microlab main"
 
 # Commit all staged changes
 commit message:
@@ -264,18 +274,23 @@ commit message:
 pull:
     git pull origin main
 
-# Pull from Gitea
-pull-gitea:
-    git pull gitea main
+# Pull from Gitea Microlab
+pull-gitea-microlab:
+    git pull gitea-microlab main
 
 # Pull from Gitea (nexus-lab instance)
 pull-gitea-nexus-lab:
     git pull gitea-nexus-lab main
 
+# Pull from Gitea Starscream
+pull-gitea-starscream:
+    git pull gitea-starscream main
+
 # Pull from all remotes
 pull-all:
     git pull origin main
-    git pull gitea main
+    git pull gitea-microlab main
+    git pull gitea-starscream main
     git pull gitea-nexus-lab main
     @echo "✅ Pulled from all!"
 
@@ -283,18 +298,23 @@ pull-all:
 push:
     git push origin main
 
-# Push to Gitea
-push-gitea:
-    git push gitea main
+# Push to Gitea Microlab
+push-gitea-microlab:
+    git push gitea-microlab main
 
 # Push to Gitea (nexus-lab instance)
 push-gitea-nexus-lab:
     git push gitea-nexus-lab main
 
+# Push to Gitea Starscream
+push-gitea-starscream:
+    git push gitea-starscream main
+
 # Push to GitHub, Gitea, and Gitea (nexus-lab)
 push-all:
     git push origin main
-    git push gitea main
+    git push gitea-microlab main
+    git push gitea-starscream main
     git push gitea-nexus-lab main
     @echo "✅ Pushed to all!"
 
@@ -305,21 +325,38 @@ push-tags:
 # Push tags to all remotes
 push-tags-all:
     git push origin --tags
-    git push gitea --tags
+    git push gitea-microlab --tags
+    git push gitea-starscream --tags
     git push gitea-nexus-lab --tags
     @echo "✅ Tags pushed to all!"
 
-# Force-sync Gitea from GitHub
-sync-gitea:
-    git push gitea main --force
-    git push gitea --tags --force
-    @echo "✅ Gitea synced!"
+# Force-sync Gitea Microlab from GitHub
+sync-gitea-microlab:
+    git push gitea-microlab main --force
+    git push gitea-microlab --tags --force
+    @echo "✅ Gitea Microlab synced!"
+
+# Force-sync Gitea Starscream from GitHub
+sync-gitea-starscream:
+    git push gitea-starscream main --force
+    git push gitea-starscream --tags --force
+    @echo "✅ Gitea Starscream synced!"
 
 # Force-sync Gitea (nexus-lab) from GitHub
 sync-gitea-nexus-lab:
     git push gitea-nexus-lab main --force
     git push gitea-nexus-lab --tags --force
     @echo "✅ Gitea (nexus-lab) synced!"
+
+# Force-sync all Gitea instances from GitHub
+sync-all-gitea:
+    git push gitea-microlab main --force
+    git push gitea-microlab --tags --force
+    git push gitea-starscream main --force
+    git push gitea-starscream --tags --force
+    git push gitea-nexus-lab main --force
+    git push gitea-nexus-lab --tags --force
+    @echo "✅ All Gitea instances synced!"
 
 # ── Misc ─────────────────────────────────────────────────────────────────────
 
